@@ -1,0 +1,24 @@
+# coding=utf-8
+"""Resource sanity tests for WebMapExporter."""
+
+import os
+
+import pytest
+
+
+def test_icon_file_exists():
+    """icon.png exists in the plugin directory."""
+    plugin_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    icon_path = os.path.join(plugin_dir, "icon.png")
+    assert os.path.isfile(icon_path), f"icon.png not found at {icon_path}"
+
+
+def test_icon_via_resource_system(qgis_app):
+    """icon.png is accessible through the Qt resource system."""
+    try:
+        from . import resources  # noqa: F401
+    except ImportError:
+        pytest.skip("resources module not compiled — run pb_tool compile first")
+    from qgis.PyQt.QtGui import QIcon
+    icon = QIcon(":/plugins/WebMapExporter/icon.png")
+    assert not icon.isNull()

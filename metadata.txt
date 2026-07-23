@@ -1,0 +1,50 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.
+# Mandatory items:
+
+[general]
+name=Web Map Exporter
+qgisMinimumVersion=4.0
+qgisMaximumVersion=4.99
+description=Export data (in cloud-native formats) and QGIS styling to build a standalone web map
+version=0.1
+author=Richard Thomas
+email=mrcobristol-qgis@yahoo.com
+
+about=Convert a QGIS Project to the key components to build a standalone web map with optimized data loading and layer styling as close to QGIS as possible. Data can be exported in selected cloud-native data formats. Styles are exported as SLD to enable use of SLDReader for accurate rendering of many different types of QGIS styles in OpenLayers. A future version is planned to directly generate a pre-configured HTML/JS template for rendering the map using just a standard web server, whilst allowing selective data/styling updates to be exported from QGIS.
+
+tracker=https://github.com/richard-thomas/qgis-web-map-exporter/issues
+repository=https://github.com/richard-thomas/qgis-web-map-exporter
+license=GNU GPL v2
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python, webgis, webmap, sld
+
+homepage=https://github.com/richard-thomas/qgis-web-map-exporter
+category=Web
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+# Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+

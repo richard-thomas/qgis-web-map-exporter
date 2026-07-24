@@ -184,7 +184,6 @@ class WebMapExporter:
                 self.dlg.log_text_browser_qt.append(f"Traversing Group: {node.name()}")
                 self._populate_layer_tree(parent_item, node.children())
             else:
-                self.dlg.log_text_browser_qt.append(f"Adding Layer: {node.name()}")
                 layer_item = QTreeWidgetItem()
 
                 row_widget = QWidget()
@@ -200,9 +199,13 @@ class WebMapExporter:
                 row_layout.addWidget(combo_box)
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
+                    self.dlg.log_text_browser_qt.append(f"Adding Vector Layer: {node.name()}")
                     combo_box.addItems(["PMTile", "FlatGeoBuf", "GeoJSON", "GeoParquet", "Placeholder"])
                 else:
+                    self.dlg.log_text_browser_qt.append(
+                        f"Adding Non-Vector Layer (Placeholder only): {node.name()}")
                     combo_box.addItems(["Placeholder"])
+                    label.setStyleSheet("color: gray; font-style: italic;")
 
                 if parent_item is None:
                     self.dlg.layers_tree_qt.addTopLevelItem(layer_item)

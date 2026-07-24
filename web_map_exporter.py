@@ -22,14 +22,13 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication
-from qgis.core import QgsSettings
+from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox
 
 # Import the code for the dialog
 from .web_map_exporter_dialog import WebMapExporterDialog
 import os.path
-
 
 class WebMapExporter:
     """QGIS Plugin Implementation."""
@@ -44,8 +43,10 @@ class WebMapExporter:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
+
         # initialize locale
         locale = QgsSettings().value('locale/userLocale', QLocale().name())[0:2]
         locale_path = os.path.join(
@@ -186,12 +187,23 @@ class WebMapExporter:
             self.first_start = False
             self.dlg = WebMapExporterDialog()
 
-        # show the dialog
+        # Fetch current project layers
+        layer_nodes = QgsProject.instance().layerTreeRoot().children()
+
+        # For each layer, create a TreeLayerItem and add it to the layersTree
+        self.layer_tree_items = QTreeWidgetItem()
+        for node in layer_nodes:
+            if isinstance(node, QgsLayerTreeGroup):
+                self.dlg.log_text_browser_qt.append(f"Skipping Group: {node.name()}")
+            else:
+                self.dlg.log_text_browser_qt.append(f"Adding Layer: {node.name()}")
+                layer_item = QTreeWidgetItem()
+                self.layer_tree_items.addChild(layer_item)
+        self.dlg.layers_tree_qt.addTopLevelItem(self.layer_tree_items)
+        self.dlg.layers_tree_qt.expandAll()
+
+        # Display the dialog
         self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+
+        # Run dialog event loop
+        self.dlg.exec()

@@ -26,8 +26,10 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import QUrl
+from qgis.PyQt.QtGui import QDesktopServices
 
-# This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
+# Load .ui file so PyQt can populate plugin with elements from QtCreator
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(
         os.path.dirname(__file__),
@@ -36,11 +38,16 @@ FORM_CLASS, _ = uic.loadUiType(
 
 class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
-        """Constructor."""
+        """Constructor"""
         super(WebMapExporterDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
+
+        # Set up user interface designed in QtCreator through FORM_CLASS
         self.setupUi(self)
+
+        # Connect main dialog "Help" button
+        self.button_box_main_qt.helpRequested.connect(self.open_help_page)
+
+    def open_help_page(self):
+        """Open documentation page in the system's default browser"""
+        help_webpage_url = "https://github.com/richard-thomas/qgis-web-map-exporter/blob/main/README.md"
+        QDesktopServices.openUrl(QUrl(help_webpage_url))

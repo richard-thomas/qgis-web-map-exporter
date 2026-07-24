@@ -22,9 +22,9 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication
-from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup
+from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox
+from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
 
 # Import the code for the dialog
 from .web_map_exporter_dialog import WebMapExporterDialog
@@ -177,6 +177,39 @@ class WebMapExporter:
                 action)
             self.iface.removeToolBarIcon(action)
 
+    def _populate_layer_tree(self, parent_item, nodes):
+        """Recursively add only layer nodes to the UI tree."""
+        for node in nodes:
+            if isinstance(node, QgsLayerTreeGroup):
+                self.dlg.log_text_browser_qt.append(f"Traversing Group: {node.name()}")
+                self._populate_layer_tree(parent_item, node.children())
+            else:
+                self.dlg.log_text_browser_qt.append(f"Adding Layer: {node.name()}")
+                layer_item = QTreeWidgetItem()
+
+                row_widget = QWidget()
+                row_layout = QHBoxLayout(row_widget)
+                row_layout.setContentsMargins(0, 0, 0, 0)
+
+                check_box = QCheckBox()
+                label = QLabel(node.name())
+                combo_box = QComboBox()
+
+                row_layout.addWidget(check_box)
+                row_layout.addWidget(label)
+                row_layout.addWidget(combo_box)
+
+                if node.layer().type() == QgsMapLayer.LayerType.Vector:
+                    combo_box.addItems(["PMTile", "FlatGeoBuf", "GeoJSON", "GeoParquet", "Placeholder"])
+                else:
+                    combo_box.addItems(["Placeholder"])
+
+                if parent_item is None:
+                    self.dlg.layers_tree_qt.addTopLevelItem(layer_item)
+                else:
+                    parent_item.addChild(layer_item)
+
+                self.dlg.layers_tree_qt.setItemWidget(layer_item, 0, row_widget)
 
     def run(self):
         """Run method that performs all the real work"""
@@ -187,19 +220,10 @@ class WebMapExporter:
             self.first_start = False
             self.dlg = WebMapExporterDialog()
 
-        # Fetch current project layers
+        # Fetch current project layers and populate the UI tree with layers only
+        self.dlg.layers_tree_qt.clear()
         layer_nodes = QgsProject.instance().layerTreeRoot().children()
-
-        # For each layer, create a TreeLayerItem and add it to the layersTree
-        self.layer_tree_items = QTreeWidgetItem()
-        for node in layer_nodes:
-            if isinstance(node, QgsLayerTreeGroup):
-                self.dlg.log_text_browser_qt.append(f"Skipping Group: {node.name()}")
-            else:
-                self.dlg.log_text_browser_qt.append(f"Adding Layer: {node.name()}")
-                layer_item = QTreeWidgetItem()
-                self.layer_tree_items.addChild(layer_item)
-        self.dlg.layers_tree_qt.addTopLevelItem(self.layer_tree_items)
+        self._populate_layer_tree(None, layer_nodes)
         self.dlg.layers_tree_qt.expandAll()
 
         # Display the dialog

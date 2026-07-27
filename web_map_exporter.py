@@ -21,6 +21,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from cProfile import label
+
+from profiling.tracing import label
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
 from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer
 from qgis.PyQt.QtGui import QIcon
@@ -178,12 +181,11 @@ class WebMapExporter:
             self.iface.removeToolBarIcon(action)
 
     def _populate_layer_tree(self, parent_item, nodes):
-        """Recursively add only layer nodes to the UI tree."""
+        """Recursively add layer and group nodes to the UI tree"""
         for node in nodes:
             if isinstance(node, QgsLayerTreeGroup):
+                # Add layer group to tree and recursively add its children
                 self.dlg.log_text_browser_qt.append(f"Traversing Group: {node.name()}")
-
-                # TBD: Add group level of hierarchy to the UI tree
                 group_item = QTreeWidgetItem()
                 group_item.setText(0, node.name())
                 if parent_item is None:
@@ -192,31 +194,29 @@ class WebMapExporter:
                     parent_item.addChild(group_item)
                 self._populate_layer_tree(group_item, node.children())
             else:
+                # Add layer to tree
                 layer_item = QTreeWidgetItem()
-
                 row_widget = QWidget()
                 row_layout = QHBoxLayout(row_widget)
                 row_layout.setContentsMargins(0, 0, 5, 0)
                 row_layout.setSpacing(4)
-
-                check_box = QCheckBox()
-                label = QLabel(node.name())
-                label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-                combo_box = QComboBox()
-
-                row_layout.addWidget(check_box, alignment=Qt.AlignmentFlag.AlignLeft)
-                row_layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignLeft)
+                lyr_check_box = QCheckBox()
+                lyr_label = QLabel(node.name())
+                lyr_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+                lyr_combo_box = QComboBox()
+                row_layout.addWidget(lyr_check_box, alignment=Qt.AlignmentFlag.AlignLeft)
+                row_layout.addWidget(lyr_label, alignment=Qt.AlignmentFlag.AlignLeft)
                 row_layout.addStretch(1)
-                row_layout.addWidget(combo_box, alignment=Qt.AlignmentFlag.AlignRight)
+                row_layout.addWidget(lyr_combo_box, alignment=Qt.AlignmentFlag.AlignRight)
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
                     self.dlg.log_text_browser_qt.append(f"Adding Vector Layer: {node.name()}")
-                    combo_box.addItems(["PMTile", "FlatGeoBuf", "GeoJSON", "GeoParquet", "Placeholder"])
+                    lyr_combo_box.addItems(["PMTile", "FlatGeoBuf", "GeoJSON", "GeoParquet", "Placeholder"])
                 else:
                     self.dlg.log_text_browser_qt.append(
                         f"Adding Non-Vector Layer (Placeholder only): {node.name()}")
-                    combo_box.addItems(["Placeholder"])
-                    label.setStyleSheet("color: gray; font-style: italic;")
+                    lyr_combo_box.addItems(["Placeholder"])
+                    lyr_label.setStyleSheet("color: gray; font-style: italic;")
 
                 if parent_item is None:
                     self.dlg.layers_tree_qt.addTopLevelItem(layer_item)

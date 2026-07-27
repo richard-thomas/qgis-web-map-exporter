@@ -21,7 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
 from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
@@ -182,21 +182,32 @@ class WebMapExporter:
         for node in nodes:
             if isinstance(node, QgsLayerTreeGroup):
                 self.dlg.log_text_browser_qt.append(f"Traversing Group: {node.name()}")
-                self._populate_layer_tree(parent_item, node.children())
+
+                # TBD: Add group level of hierarchy to the UI tree
+                group_item = QTreeWidgetItem()
+                group_item.setText(0, node.name())
+                if parent_item is None:
+                    self.dlg.layers_tree_qt.addTopLevelItem(group_item)
+                else:
+                    parent_item.addChild(group_item)
+                self._populate_layer_tree(group_item, node.children())
             else:
                 layer_item = QTreeWidgetItem()
 
                 row_widget = QWidget()
                 row_layout = QHBoxLayout(row_widget)
-                row_layout.setContentsMargins(0, 0, 0, 0)
+                row_layout.setContentsMargins(0, 0, 5, 0)
+                row_layout.setSpacing(4)
 
                 check_box = QCheckBox()
                 label = QLabel(node.name())
+                label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
                 combo_box = QComboBox()
 
-                row_layout.addWidget(check_box)
-                row_layout.addWidget(label)
-                row_layout.addWidget(combo_box)
+                row_layout.addWidget(check_box, alignment=Qt.AlignmentFlag.AlignLeft)
+                row_layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignLeft)
+                row_layout.addStretch(1)
+                row_layout.addWidget(combo_box, alignment=Qt.AlignmentFlag.AlignRight)
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
                     self.dlg.log_text_browser_qt.append(f"Adding Vector Layer: {node.name()}")

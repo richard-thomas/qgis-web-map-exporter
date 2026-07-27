@@ -22,9 +22,9 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
-from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer
+from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer, QgsSldExportContext
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
+from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout, QFileDialog
 
 # Import the code for the dialog
 from .web_map_exporter_dialog import WebMapExporterDialog
@@ -230,6 +230,7 @@ class WebMapExporter:
         if self.first_start == True:
             self.first_start = False
             self.dlg = WebMapExporterDialog()
+            self.dlg.set_export_handler(self.export_layers)
 
         # Fetch current project layers and populate the UI tree with layers only
         self.dlg.layers_tree_qt.clear()
@@ -242,3 +243,87 @@ class WebMapExporter:
 
         # Run dialog event loop
         self.dlg.exec()
+
+    def export_layers(self):
+        """Prompt for an output folder and write requested export files."""
+        if not hasattr(self, 'dlg'):
+            return
+
+        output_dir = QFileDialog.getExistingDirectory(
+            self.dlg,
+            self.tr('Select export folder'),
+            QgsProject.instance().absolutePath()
+            # TBD: add default folder if proj not saved, e.g. or self.iface.homePath()
+        )
+        if not output_dir:
+            return
+
+        write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
+
+        root = self.dlg.layers_tree_qt.invisibleRootItem()
+        selected_layers = []
+
+        for index in range(root.childCount()):
+            item = root.child(index)
+            if item.childCount() > 0:
+                self._collect_selected_layers(item, selected_layers)
+            else:
+                self._collect_selected_layers(item, selected_layers)
+
+        if write_slds:
+            for layer_name, layer in selected_layers:
+                if layer is None:
+                    continue
+                sld_text = self._get_layer_sld(layer)
+                if sld_text is None:
+                    continue
+                output_path = os.path.join(output_dir, f"{layer_name}.sld")
+                with open(output_path, 'w', encoding='utf-8') as handle:
+                    handle.write(sld_text)
+
+        # TBD: Do not close dialog, but instead show export complete message
+        #self.dlg.accept()
+
+    def _collect_selected_layers(self, item, selected_layers):
+        """Collect checked layers from the tree widget rows."""
+        if item.childCount() == 0:
+            widget = self.dlg.layers_tree_qt.itemWidget(item, 0)
+            if widget is None:
+                return
+
+            checkbox = widget.findChild(QCheckBox)
+            if checkbox is None or not checkbox.isChecked():
+                return
+
+
+            label_widget = widget.findChild(QLabel)
+            if label_widget is not None:
+                layer_name = label_widget.text()
+
+            layer_item = self._find_layer_by_name(layer_name)
+            selected_layers.append((layer_name, layer_item))
+            return
+
+        for child_index in range(item.childCount()):
+            child_item = item.child(child_index)
+            self._collect_selected_layers(child_item, selected_layers)
+
+    def _find_layer_by_name(self, layer_name):
+        """Find a layer in the current project by its tree name."""
+        for layer in QgsProject.instance().mapLayers().values():
+            if layer.name() == layer_name:
+                return layer
+        return None
+
+    def _get_layer_sld(self, layer):
+        """Return SLD content for a layer if it is available."""
+        if layer is None:
+            return None
+
+        try:
+            sld_text = None
+            context = QgsSldExportContext()
+            sld_text = layer.exportSldStyleV3(context)
+            return sld_text.toString()
+        except Exception:
+            return None

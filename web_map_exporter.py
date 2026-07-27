@@ -21,9 +21,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-from cProfile import label
-
-from profiling.tracing import label
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
 from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer
 from qgis.PyQt.QtGui import QIcon

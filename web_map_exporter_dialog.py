@@ -46,8 +46,20 @@ class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Connect main dialog "Help" button
         self.button_box_main_qt.helpRequested.connect(self.open_help_page)
+        self.button_export_qt.clicked.connect(self._handle_export_click)
+
+        self._export_handler = None
 
     def open_help_page(self):
         """Open documentation page in the system's default browser"""
         help_webpage_url = "https://github.com/richard-thomas/qgis-web-map-exporter/blob/main/README.md"
         QDesktopServices.openUrl(QUrl(help_webpage_url))
+
+    def set_export_handler(self, handler):
+        """Register a callback to run when the export button is clicked."""
+        self._export_handler = handler
+
+    def _handle_export_click(self):
+        """Run the registered export handler if one was provided."""
+        if self._export_handler is not None:
+            self._export_handler()

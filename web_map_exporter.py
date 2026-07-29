@@ -22,14 +22,14 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
-from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer, QgsSldExportContext, QgsVectorFileWriter, QgsCoordinateTransformContext, QgsRectangle, QgsCoordinateTransform
+from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout, QFileDialog
+from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
 
 # Import the code for the dialog
+from .file_export import FileExport
 from .web_map_exporter_dialog import WebMapExporterDialog
 import os.path
-import json
 
 class WebMapExporter:
     """QGIS Plugin Implementation."""
@@ -67,6 +67,7 @@ class WebMapExporter:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
+        self.file_export = FileExport(self)
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -247,156 +248,7 @@ class WebMapExporter:
         self.dlg.exec()
 
     def export_layers(self):
-        """Prompt for an output folder and write requested export files."""
+        """Delegate export work to the dedicated file exporter."""
         if not hasattr(self, 'dlg'):
             return
-
-        # Get Output folder to write files from user
-        self.dlg.log_text_browser_qt.append(f'\nGetting output folder from user for exporting...')
-        if not hasattr(self, 'last_output_dir'):
-            self.last_output_dir = QgsProject.instance().absolutePath() or os.path.expanduser('~')
-        output_dir = QFileDialog.getExistingDirectory(
-            self.dlg,
-            self.tr('Select export folder'),
-            self.last_output_dir
-        )
-        if not output_dir:
-            return
-        self.last_output_dir = output_dir
-
-        # Get selected layers and their requested export formats from UI
-        root = self.dlg.layers_tree_qt.invisibleRootItem()
-        selected_layers = []
-        for index in range(root.childCount()):
-            item = root.child(index)
-            self._collect_selected_layers(item, selected_layers)
-
-        # Write SLD files for selected layers if requested
-        write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
-        if write_slds:
-            self.dlg.log_text_browser_qt.append(f'Exporting SLD files for selected layers to: {output_dir}')
-            for layer_name, layer, _ in selected_layers:
-                if layer is None:
-                    continue
-                sld_text = self._get_layer_sld(layer)
-                if sld_text is None:
-                    continue
-                sld_output_path = os.path.join(output_dir, f'{layer_name}.sld')
-                with open(sld_output_path, 'w', encoding='utf-8') as handle:
-                    handle.write(sld_text)
-
-        # Set up data formats options
-        transform_context = QgsCoordinateTransformContext()
-        fgb_options = QgsVectorFileWriter.SaveVectorOptions()
-        fgb_options.driverName = 'FlatGeobuf'
-        fgb_options.fileEncoding = 'UTF-8'
-        gj_options = QgsVectorFileWriter.SaveVectorOptions()
-        gj_options.driverName = 'GeoJSON'
-        gj_options.fileEncoding = 'UTF-8'
-
-        # Write out data in requested formats
-        for layer_name, layer, layer_format in selected_layers:
-            if layer is None:
-                continue
-
-            if layer_format == 'FlatGeoBuf':
-                output_path = os.path.join(output_dir, f'{layer_name}.fgb')
-                self.dlg.log_text_browser_qt.append(f'Exporting FlatGeobuf layer: {layer_name}.fgb')
-                QgsVectorFileWriter.writeAsVectorFormatV3(layer, output_path, transform_context, fgb_options)
-            elif layer_format == 'GeoJSON':
-                output_path = os.path.join(output_dir, f'{layer_name}.geojson')
-                self.dlg.log_text_browser_qt.append(f'Exporting GeoJSON layer: {layer_name}.geojson')
-                QgsVectorFileWriter.writeAsVectorFormatV3(layer, output_path, transform_context, gj_options)
-            elif layer_format == 'PMTile':
-                # TBD: Implement PMTile export
-                self.dlg.log_text_browser_qt.append(f'Skipping layer "{layer_name}" - PMTile export not yet implemented')
-            elif layer_format == 'GeoParquet':
-                # TBD: Implement GeoParquet export
-                self.dlg.log_text_browser_qt.append(f'Skipping layer "{layer_name}" - GeoParquet export not yet implemented')
-
-        # Write map config file
-        write_map = self.dlg.options_checkbox_map_qt.isChecked()
-        if write_map:
-            self.dlg.log_text_browser_qt.append(f'Exporting map config file to: {output_dir}')
-
-            # Write a web map configuration JSONP file for the selected layers
-            map_config_txt = 'var mapConfig = '
-            map_config = {}
-
-            # Hardwire projection for now
-            map_config['displayProjection'] = 'EPSG:3857'
-
-            # Add details of selected layers and compute their maximum extent
-            data_layers_config = []
-            max_extent = QgsRectangle()
-            for layer_name, layer, layer_format in selected_layers:
-                data_layers_config.append({
-                    'name': layer_name,
-                    'format': layer_format,
-                    'sld': f'{layer_name}.sld' if write_slds else None
-                })
-                if layer.extent():
-                    # Convert extent to EPSG:3857 if needed (hardwired for now)
-                    if layer.crs().authid() != 'EPSG:3857':
-                        transform = QgsCoordinateTransform(layer.crs(), QgsProject.instance().crs(), transform_context)
-                        layer_extent_3857 = transform.transform(layer.extent())
-                        max_extent.combineExtentWith(layer_extent_3857)
-                    else:
-                        max_extent.combineExtentWith(layer.extent())
-
-            map_config['initialMapExtent'] = [max_extent.xMinimum(), max_extent.yMinimum(), max_extent.xMaximum(), max_extent.yMaximum()]
-            map_config['dataLayersConfig'] = data_layers_config
-
-            map_config_txt += json.dumps(map_config, indent=4)
-            map_config_txt += ';\n'
-            map_output_path = os.path.join(output_dir, 'map_config.js')
-            with open(map_output_path, 'w', encoding='utf-8') as handle:
-                handle.write(map_config_txt)
-
-        # TBD: Show export complete message as a Plugin status bar message or popup dialog
-        self.dlg.log_text_browser_qt.append('Export complete!\n')
-
-    def _collect_selected_layers(self, item, selected_layers):
-        """Collect checked layers from the tree widget rows."""
-        if item.childCount() == 0:
-            widget = self.dlg.layers_tree_qt.itemWidget(item, 0)
-            if widget is None:
-                return
-
-            checkbox = widget.findChild(QCheckBox)
-            if checkbox is None or not checkbox.isChecked():
-                return
-
-
-            label_widget = widget.findChild(QLabel)
-            layer_name = label_widget.text()
-            format_combobox = widget.findChild(QComboBox)
-            layer_format = format_combobox.currentText()
-
-            layer_item = self._find_layer_by_name(layer_name)
-            selected_layers.append((layer_name, layer_item, layer_format))
-            return
-
-        for child_index in range(item.childCount()):
-            child_item = item.child(child_index)
-            self._collect_selected_layers(child_item, selected_layers)
-
-    def _find_layer_by_name(self, layer_name):
-        """Find a layer in the current project by its tree name."""
-        for layer in QgsProject.instance().mapLayers().values():
-            if layer.name() == layer_name:
-                return layer
-        return None
-
-    def _get_layer_sld(self, layer):
-        """Return SLD content for a layer if it is available."""
-        if layer is None:
-            return None
-
-        try:
-            sld_text = None
-            context = QgsSldExportContext()
-            sld_text = layer.exportSldStyleV3(context)
-            return sld_text.toString()
-        except Exception:
-            return None
+        self.file_export.export_layers(self.dlg, self.tr)

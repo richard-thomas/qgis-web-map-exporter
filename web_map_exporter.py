@@ -22,7 +22,7 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
-from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer, QgsSldExportContext
+from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer, QgsSldExportContext, QgsVectorFileWriter, QgsCoordinateTransformContext
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout, QFileDialog
 
@@ -208,11 +208,11 @@ class WebMapExporter:
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
                     self.dlg.log_text_browser_qt.append(f"Adding Vector Layer: {node.name()}")
-                    lyr_combo_box.addItems(["PMTile", "FlatGeoBuf", "GeoJSON", "GeoParquet", "Placeholder"])
+                    lyr_combo_box.addItems(["FlatGeoBuf", "PMTile", "GeoJSON", "GeoParquet", "(Placeholder)"])
                 else:
                     self.dlg.log_text_browser_qt.append(
                         f"Adding Non-Vector Layer (Placeholder only): {node.name()}")
-                    lyr_combo_box.addItems(["Placeholder"])
+                    lyr_combo_box.addItems(["(Placeholder)"])
                     lyr_label.setStyleSheet("color: gray; font-style: italic;")
 
                 if parent_item is None:
@@ -249,40 +249,84 @@ class WebMapExporter:
         if not hasattr(self, 'dlg'):
             return
 
+        # Get Output folder to write files from user
+        if not hasattr(self, 'last_output_dir'):
+            self.last_output_dir = QgsProject.instance().absolutePath() or os.path.expanduser("~")
         output_dir = QFileDialog.getExistingDirectory(
             self.dlg,
             self.tr('Select export folder'),
-            QgsProject.instance().absolutePath()
-            # TBD: add default folder if proj not saved, e.g. or self.iface.homePath()
+            self.last_output_dir
         )
         if not output_dir:
             return
+        self.last_output_dir = output_dir
 
-        write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
-
+        # Get selected layers and their requested export formats from UI
         root = self.dlg.layers_tree_qt.invisibleRootItem()
         selected_layers = []
-
         for index in range(root.childCount()):
             item = root.child(index)
-            if item.childCount() > 0:
-                self._collect_selected_layers(item, selected_layers)
-            else:
-                self._collect_selected_layers(item, selected_layers)
+            self._collect_selected_layers(item, selected_layers)
 
+        # Write SLD files for selected layers if requested
+        write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
         if write_slds:
-            for layer_name, layer in selected_layers:
+            self.dlg.log_text_browser_qt.append(f"Exporting SLD files for selected layers to: {output_dir}")
+            for layer_name, layer, _ in selected_layers:
                 if layer is None:
                     continue
                 sld_text = self._get_layer_sld(layer)
                 if sld_text is None:
                     continue
-                output_path = os.path.join(output_dir, f"{layer_name}.sld")
-                with open(output_path, 'w', encoding='utf-8') as handle:
+                sld_output_path = os.path.join(output_dir, f"{layer_name}.sld")
+                with open(sld_output_path, 'w', encoding='utf-8') as handle:
                     handle.write(sld_text)
 
-        # TBD: Do not close dialog, but instead show export complete message
-        #self.dlg.accept()
+        # Set up data formats options
+        transform_context = QgsCoordinateTransformContext()
+        fgb_options = QgsVectorFileWriter.SaveVectorOptions()
+        fgb_options.driverName = "FlatGeobuf"
+        fgb_options.fileEncoding = "UTF-8"
+        gj_options = QgsVectorFileWriter.SaveVectorOptions()
+        gj_options.driverName = "GeoJSON"
+        gj_options.fileEncoding = "UTF-8"
+
+        # Write out data in requested formats
+        for layer_name, layer, layer_format in selected_layers:
+            if layer is None:
+                continue
+
+            if layer_format == "FlatGeoBuf":
+                output_path = os.path.join(output_dir, f"{layer_name}.fgb")
+                self.dlg.log_text_browser_qt.append(f"Exporting FlatGeobuf layer: {layer_name}.fgb")
+                QgsVectorFileWriter.writeAsVectorFormatV3(layer, output_path, transform_context, fgb_options)
+            elif layer_format == "GeoJSON":
+                output_path = os.path.join(output_dir, f"{layer_name}.geojson")
+                self.dlg.log_text_browser_qt.append(f"Exporting GeoJSON layer: {layer_name}.geojson")
+                QgsVectorFileWriter.writeAsVectorFormatV3(layer, output_path, transform_context, gj_options)
+            elif layer_format == "PMTile":
+                # TBD: Implement PMTile export
+                self.dlg.log_text_browser_qt.append(f"PMTile export not yet implemented for layer: {layer_name}")
+            elif layer_format == "GeoParquet":
+                # TBD: Implement GeoParquet export
+                self.dlg.log_text_browser_qt.append(f"GeoParquet export not yet implemented for layer: {layer_name}")
+
+        # Write map config file
+        write_map = self.dlg.options_checkbox_map_qt.isChecked()
+        if write_map:
+            self.dlg.log_text_browser_qt.append(f"Exporting map config file to: {output_dir}")
+
+            # Proof of concept: Write a simple map_config.js file with the list of selected layers
+            map_config = "var fgbLayerList = [";
+            for layer_name, layer, layer_format in selected_layers:
+                map_config += f"'{layer_name}',"
+            map_config += "];"
+            map_output_path = os.path.join(output_dir, "map_config.js")
+            with open(map_output_path, 'w', encoding='utf-8') as handle:
+                handle.write(map_config)
+
+        # TBD: Show export complete message as a Plugin status bar message or popup dialog
+        self.dlg.log_text_browser_qt.append("Export complete!")
 
     def _collect_selected_layers(self, item, selected_layers):
         """Collect checked layers from the tree widget rows."""
@@ -297,11 +341,12 @@ class WebMapExporter:
 
 
             label_widget = widget.findChild(QLabel)
-            if label_widget is not None:
-                layer_name = label_widget.text()
+            layer_name = label_widget.text()
+            format_combobox = widget.findChild(QComboBox)
+            layer_format = format_combobox.currentText()
 
             layer_item = self._find_layer_by_name(layer_name)
-            selected_layers.append((layer_name, layer_item))
+            selected_layers.append((layer_name, layer_item, layer_format))
             return
 
         for child_index in range(item.childCount()):

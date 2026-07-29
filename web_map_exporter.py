@@ -22,13 +22,14 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
-from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer, QgsSldExportContext, QgsVectorFileWriter, QgsCoordinateTransformContext
+from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer, QgsSldExportContext, QgsVectorFileWriter, QgsCoordinateTransformContext, QgsRectangle, QgsCoordinateTransform
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout, QFileDialog
 
 # Import the code for the dialog
 from .web_map_exporter_dialog import WebMapExporterDialog
 import os.path
+import json
 
 class WebMapExporter:
     """QGIS Plugin Implementation."""
@@ -168,7 +169,6 @@ class WebMapExporter:
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -178,11 +178,11 @@ class WebMapExporter:
             self.iface.removeToolBarIcon(action)
 
     def _populate_layer_tree(self, parent_item, nodes):
-        """Recursively add layer and group nodes to the UI tree"""
+        """Recursively add layer and group nodes to the UI tree."""
         for node in nodes:
             if isinstance(node, QgsLayerTreeGroup):
                 # Add layer group to tree and recursively add its children
-                self.dlg.log_text_browser_qt.append(f"Traversing Group: {node.name()}")
+                self.dlg.log_text_browser_qt.append(f'Traversing Group: {node.name()}')
                 group_item = QTreeWidgetItem()
                 group_item.setText(0, node.name())
                 if parent_item is None:
@@ -207,13 +207,13 @@ class WebMapExporter:
                 row_layout.addWidget(lyr_combo_box, alignment=Qt.AlignmentFlag.AlignRight)
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
-                    self.dlg.log_text_browser_qt.append(f"Adding Vector Layer: {node.name()}")
-                    lyr_combo_box.addItems(["FlatGeoBuf", "PMTile", "GeoJSON", "GeoParquet", "(Placeholder)"])
+                    self.dlg.log_text_browser_qt.append(f'Adding Vector Layer: {node.name()}')
+                    lyr_combo_box.addItems(['FlatGeoBuf', 'PMTile', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
                 else:
                     self.dlg.log_text_browser_qt.append(
-                        f"Adding Non-Vector Layer (Placeholder only): {node.name()}")
-                    lyr_combo_box.addItems(["(Placeholder)"])
-                    lyr_label.setStyleSheet("color: gray; font-style: italic;")
+                        f'Adding Non-Vector Layer (Placeholder only): {node.name()}')
+                    lyr_combo_box.addItems(['(Placeholder)'])
+                    lyr_label.setStyleSheet('color: gray; font-style: italic;')
 
                 if parent_item is None:
                     self.dlg.layers_tree_qt.addTopLevelItem(layer_item)
@@ -223,7 +223,7 @@ class WebMapExporter:
                 self.dlg.layers_tree_qt.setItemWidget(layer_item, 0, row_widget)
 
     def run(self):
-        """Run method that performs all the real work"""
+        """Run method that performs all the real work."""
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
@@ -231,6 +231,8 @@ class WebMapExporter:
             self.first_start = False
             self.dlg = WebMapExporterDialog()
             self.dlg.set_export_handler(self.export_layers)
+        else:
+            self.dlg.log_text_browser_qt.clear()
 
         # Fetch current project layers and populate the UI tree with layers only
         self.dlg.layers_tree_qt.clear()
@@ -250,8 +252,9 @@ class WebMapExporter:
             return
 
         # Get Output folder to write files from user
+        self.dlg.log_text_browser_qt.append(f'\nGetting output folder from user for exporting...')
         if not hasattr(self, 'last_output_dir'):
-            self.last_output_dir = QgsProject.instance().absolutePath() or os.path.expanduser("~")
+            self.last_output_dir = QgsProject.instance().absolutePath() or os.path.expanduser('~')
         output_dir = QFileDialog.getExistingDirectory(
             self.dlg,
             self.tr('Select export folder'),
@@ -271,62 +274,87 @@ class WebMapExporter:
         # Write SLD files for selected layers if requested
         write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
         if write_slds:
-            self.dlg.log_text_browser_qt.append(f"Exporting SLD files for selected layers to: {output_dir}")
+            self.dlg.log_text_browser_qt.append(f'Exporting SLD files for selected layers to: {output_dir}')
             for layer_name, layer, _ in selected_layers:
                 if layer is None:
                     continue
                 sld_text = self._get_layer_sld(layer)
                 if sld_text is None:
                     continue
-                sld_output_path = os.path.join(output_dir, f"{layer_name}.sld")
+                sld_output_path = os.path.join(output_dir, f'{layer_name}.sld')
                 with open(sld_output_path, 'w', encoding='utf-8') as handle:
                     handle.write(sld_text)
 
         # Set up data formats options
         transform_context = QgsCoordinateTransformContext()
         fgb_options = QgsVectorFileWriter.SaveVectorOptions()
-        fgb_options.driverName = "FlatGeobuf"
-        fgb_options.fileEncoding = "UTF-8"
+        fgb_options.driverName = 'FlatGeobuf'
+        fgb_options.fileEncoding = 'UTF-8'
         gj_options = QgsVectorFileWriter.SaveVectorOptions()
-        gj_options.driverName = "GeoJSON"
-        gj_options.fileEncoding = "UTF-8"
+        gj_options.driverName = 'GeoJSON'
+        gj_options.fileEncoding = 'UTF-8'
 
         # Write out data in requested formats
         for layer_name, layer, layer_format in selected_layers:
             if layer is None:
                 continue
 
-            if layer_format == "FlatGeoBuf":
-                output_path = os.path.join(output_dir, f"{layer_name}.fgb")
-                self.dlg.log_text_browser_qt.append(f"Exporting FlatGeobuf layer: {layer_name}.fgb")
+            if layer_format == 'FlatGeoBuf':
+                output_path = os.path.join(output_dir, f'{layer_name}.fgb')
+                self.dlg.log_text_browser_qt.append(f'Exporting FlatGeobuf layer: {layer_name}.fgb')
                 QgsVectorFileWriter.writeAsVectorFormatV3(layer, output_path, transform_context, fgb_options)
-            elif layer_format == "GeoJSON":
-                output_path = os.path.join(output_dir, f"{layer_name}.geojson")
-                self.dlg.log_text_browser_qt.append(f"Exporting GeoJSON layer: {layer_name}.geojson")
+            elif layer_format == 'GeoJSON':
+                output_path = os.path.join(output_dir, f'{layer_name}.geojson')
+                self.dlg.log_text_browser_qt.append(f'Exporting GeoJSON layer: {layer_name}.geojson')
                 QgsVectorFileWriter.writeAsVectorFormatV3(layer, output_path, transform_context, gj_options)
-            elif layer_format == "PMTile":
+            elif layer_format == 'PMTile':
                 # TBD: Implement PMTile export
-                self.dlg.log_text_browser_qt.append(f"PMTile export not yet implemented for layer: {layer_name}")
-            elif layer_format == "GeoParquet":
+                self.dlg.log_text_browser_qt.append(f'Skipping layer "{layer_name}" - PMTile export not yet implemented')
+            elif layer_format == 'GeoParquet':
                 # TBD: Implement GeoParquet export
-                self.dlg.log_text_browser_qt.append(f"GeoParquet export not yet implemented for layer: {layer_name}")
+                self.dlg.log_text_browser_qt.append(f'Skipping layer "{layer_name}" - GeoParquet export not yet implemented')
 
         # Write map config file
         write_map = self.dlg.options_checkbox_map_qt.isChecked()
         if write_map:
-            self.dlg.log_text_browser_qt.append(f"Exporting map config file to: {output_dir}")
+            self.dlg.log_text_browser_qt.append(f'Exporting map config file to: {output_dir}')
 
-            # Proof of concept: Write a simple map_config.js file with the list of selected layers
-            map_config = "var fgbLayerList = [";
+            # Write a web map configuration JSONP file for the selected layers
+            map_config_txt = 'var mapConfig = '
+            map_config = {}
+
+            # Hardwire projection for now
+            map_config['displayProjection'] = 'EPSG:3857'
+
+            # Add details of selected layers and compute their maximum extent
+            data_layers_config = []
+            max_extent = QgsRectangle()
             for layer_name, layer, layer_format in selected_layers:
-                map_config += f"'{layer_name}',"
-            map_config += "];"
-            map_output_path = os.path.join(output_dir, "map_config.js")
+                data_layers_config.append({
+                    'name': layer_name,
+                    'format': layer_format,
+                    'sld': f'{layer_name}.sld' if write_slds else None
+                })
+                if layer.extent():
+                    # Convert extent to EPSG:3857 if needed (hardwired for now)
+                    if layer.crs().authid() != 'EPSG:3857':
+                        transform = QgsCoordinateTransform(layer.crs(), QgsProject.instance().crs(), transform_context)
+                        layer_extent_3857 = transform.transform(layer.extent())
+                        max_extent.combineExtentWith(layer_extent_3857)
+                    else:
+                        max_extent.combineExtentWith(layer.extent())
+
+            map_config['initialMapExtent'] = [max_extent.xMinimum(), max_extent.yMinimum(), max_extent.xMaximum(), max_extent.yMaximum()]
+            map_config['dataLayersConfig'] = data_layers_config
+
+            map_config_txt += json.dumps(map_config, indent=4)
+            map_config_txt += ';\n'
+            map_output_path = os.path.join(output_dir, 'map_config.js')
             with open(map_output_path, 'w', encoding='utf-8') as handle:
-                handle.write(map_config)
+                handle.write(map_config_txt)
 
         # TBD: Show export complete message as a Plugin status bar message or popup dialog
-        self.dlg.log_text_browser_qt.append("Export complete!")
+        self.dlg.log_text_browser_qt.append('Export complete!\n')
 
     def _collect_selected_layers(self, item, selected_layers):
         """Collect checked layers from the tree widget rows."""

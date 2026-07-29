@@ -52,7 +52,7 @@ class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def open_help_page(self):
         """Open documentation page in the system's default browser"""
-        help_webpage_url = "https://github.com/richard-thomas/qgis-web-map-exporter/blob/main/README.md"
+        help_webpage_url = 'https://github.com/richard-thomas/qgis-web-map-exporter/blob/main/README.md'
         QDesktopServices.openUrl(QUrl(help_webpage_url))
 
     def set_export_handler(self, handler):

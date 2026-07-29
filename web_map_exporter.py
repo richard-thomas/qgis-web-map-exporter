@@ -249,6 +249,4 @@ class WebMapExporter:
 
     def export_layers(self):
         """Delegate export work to the dedicated file exporter."""
-        if not hasattr(self, 'dlg'):
-            return
         self.file_export.export_layers(self.dlg, self.tr)

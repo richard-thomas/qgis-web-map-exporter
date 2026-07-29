@@ -14,7 +14,6 @@ from qgis.core import (
     QgsVectorFileWriter,
 )
 
-
 class FileExport:
     """Perform data and styling extraction from QGIS into files."""
 
@@ -24,9 +23,7 @@ class FileExport:
 
     def export_layers(self, dialog, tr):
         """Prompt for an output folder and write requested export files."""
-        if dialog is None:
-            return
-
+        # Get Output folder to write files from user
         dialog.log_text_browser_qt.append("\nGetting output folder from user for exporting...")
         if self.last_output_dir is None:
             self.last_output_dir = QgsProject.instance().absolutePath() or os.path.expanduser("~")
@@ -40,8 +37,15 @@ class FileExport:
             return
         self.last_output_dir = output_dir
 
-        selected_layers = self.collect_selected_layers(dialog)
+        # Get selected layers and their requested export formats from UI
+        #selected_layers = self.collect_selected_layers(dialog)
+        root = dialog.layers_tree_qt.invisibleRootItem()
+        selected_layers = []
+        for index in range(root.childCount()):
+            item = root.child(index)
+            self._collect_selected_layers(dialog, item, selected_layers)
 
+        # Write SLD files for selected layers if requested
         write_slds = dialog.options_checkbox_slds_qt.isChecked()
         if write_slds:
             dialog.log_text_browser_qt.append(
@@ -57,6 +61,7 @@ class FileExport:
                 with open(sld_output_path, "w", encoding="utf-8") as handle:
                     handle.write(sld_text)
 
+        # Set up data formats options
         transform_context = QgsCoordinateTransformContext()
         fgb_options = QgsVectorFileWriter.SaveVectorOptions()
         fgb_options.driverName = "FlatGeobuf"
@@ -65,6 +70,7 @@ class FileExport:
         gj_options.driverName = "GeoJSON"
         gj_options.fileEncoding = "UTF-8"
 
+        # Write out data in requested formats
         for layer_name, layer, layer_format in selected_layers:
             if layer is None:
                 continue
@@ -86,22 +92,29 @@ class FileExport:
                     layer, output_path, transform_context, gj_options
                 )
             elif layer_format == "PMTile":
+                # TBD: Implement PMTile export
                 dialog.log_text_browser_qt.append(
                     f'Skipping layer "{layer_name}" - PMTile export not yet implemented'
                 )
             elif layer_format == "GeoParquet":
+                # TBD: Implement GeoParquet export
                 dialog.log_text_browser_qt.append(
                     f'Skipping layer "{layer_name}" - GeoParquet export not yet implemented'
                 )
 
+        # Write map config file
         write_map = dialog.options_checkbox_map_qt.isChecked()
         if write_map:
             dialog.log_text_browser_qt.append(f"Exporting map config file to: {output_dir}")
 
+            # Write a web map configuration JSONP file for the selected layers
             map_config_txt = "var mapConfig = "
             map_config = {}
+
+            # Hardwire projection for now
             map_config["displayProjection"] = "EPSG:3857"
 
+            # Add details of selected layers and compute their maximum extent
             data_layers_config = []
             max_extent = QgsRectangle()
             for layer_name, layer, layer_format in selected_layers:
@@ -113,6 +126,7 @@ class FileExport:
                     }
                 )
                 if layer.extent():
+                    # Convert extent to EPSG:3857 if needed (hardwired for now)
                     if layer.crs().authid() != "EPSG:3857":
                         transform = QgsCoordinateTransform(
                             layer.crs(),
@@ -138,16 +152,8 @@ class FileExport:
             with open(map_output_path, "w", encoding="utf-8") as handle:
                 handle.write(map_config_txt)
 
+        # TBD: Show export complete message as a Plugin status bar message or popup dialog
         dialog.log_text_browser_qt.append("Export complete!\n")
-
-    def collect_selected_layers(self, dialog):
-        """Collect checked layers from the tree widget rows."""
-        root = dialog.layers_tree_qt.invisibleRootItem()
-        selected_layers = []
-        for index in range(root.childCount()):
-            item = root.child(index)
-            self._collect_selected_layers(dialog, item, selected_layers)
-        return selected_layers
 
     def _collect_selected_layers(self, dialog, item, selected_layers):
         if item.childCount() == 0:

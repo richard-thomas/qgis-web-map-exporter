@@ -1,8 +1,10 @@
 # coding=utf-8
 """Lifecycle tests: classFactory -> initGui -> unload."""
 
-import pytest
+# Currently these auto-generated lifecycle tests do not work - issue logged:
+# https://github.com/jonah-sullivan/Qgis-Plugin-Builder/issues/165
 
+import pytest
 
 def test_class_factory_returns_instance(qgis_iface):
     """classFactory returns a plugin instance."""

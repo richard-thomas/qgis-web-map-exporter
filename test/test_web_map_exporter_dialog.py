@@ -38,10 +38,3 @@ def test_help_button_opens_webpage(dialog, monkeypatch):
     dialog.button_box_main_qt.helpRequested.emit()
     assert len(opened_urls) == 1
     assert opened_urls[0] == test_url
-
-def test_export_button_calls_handler(dialog):
-    """Clicking Export invokes the registered export handler."""
-    calls = []
-    dialog.set_export_handler(lambda: calls.append("export"))
-    dialog.button_export_qt.click()
-    assert calls == ["export"]

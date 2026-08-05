@@ -80,6 +80,7 @@ class FileExport:
                 dialog.log_text_browser_qt.append(
                     f"Exporting FlatGeobuf layer: {layer_name}.fgb"
                 )
+                dialog.log_text_browser_qt.append(f"- Layer source: {layer.source()}")
                 QgsVectorFileWriter.writeAsVectorFormatV3(
                     layer, output_path, transform_context, fgb_options
                 )

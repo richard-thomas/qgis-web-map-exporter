@@ -3,6 +3,7 @@
 
 import json
 import os
+from osgeo import ogr
 
 from qgis.PyQt.QtWidgets import QCheckBox, QLabel, QComboBox, QFileDialog
 from qgis.core import (
@@ -12,6 +13,7 @@ from qgis.core import (
     QgsRectangle,
     QgsSldExportContext,
     QgsVectorFileWriter,
+    Qgis,
 )
 
 class FileExport:
@@ -21,10 +23,30 @@ class FileExport:
         self.plugin = plugin
         self.last_output_dir = None
 
-    def export_layers(self, dialog, tr):
+    def export_layers(self, dialog, iface, tr):
         """Prompt for an output folder and write requested export files."""
+
+        # Get selected layers and their requested export formats from UI
+        root = dialog.layers_tree_qt.invisibleRootItem()
+        selected_layers = []
+        for index in range(root.childCount()):
+            item = root.child(index)
+            self._collect_selected_layers(dialog, item, selected_layers)
+
+        # If GeoParquet export is requested, stop export if not supported
+        if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
+                any(layer_format == "GeoParquet" for _, _, layer_format in selected_layers)):
+            dialog.log_text_browser_qt.append(
+                "GeoParquet export is not supported by the current QGIS installation.\n"
+                "Please install the 'Parquet' GDAL driver to enable GeoParquet export."
+            )
+            iface.messageBar().pushMessage(
+                "Error",
+                "Export aborted: GeoParquet export is not supported by the current QGIS installation.",
+                level=Qgis.Critical)
+            return
+
         # Get Output folder to write files from user
-        dialog.log_text_browser_qt.append("\nGetting output folder from user for exporting...")
         if self.last_output_dir is None:
             self.last_output_dir = QgsProject.instance().absolutePath() or os.path.expanduser("~")
 
@@ -36,14 +58,6 @@ class FileExport:
         if not output_dir:
             return
         self.last_output_dir = output_dir
-
-        # Get selected layers and their requested export formats from UI
-        #selected_layers = self.collect_selected_layers(dialog)
-        root = dialog.layers_tree_qt.invisibleRootItem()
-        selected_layers = []
-        for index in range(root.childCount()):
-            item = root.child(index)
-            self._collect_selected_layers(dialog, item, selected_layers)
 
         # Write SLD files for selected layers if requested
         write_slds = dialog.options_checkbox_slds_qt.isChecked()
@@ -66,6 +80,9 @@ class FileExport:
         fgb_options = QgsVectorFileWriter.SaveVectorOptions()
         fgb_options.driverName = "FlatGeobuf"
         fgb_options.fileEncoding = "UTF-8"
+        gpq_options = QgsVectorFileWriter.SaveVectorOptions()
+        gpq_options.driverName = "GeoParquet"
+        gpq_options.fileEncoding = "UTF-8"
         gj_options = QgsVectorFileWriter.SaveVectorOptions()
         gj_options.driverName = "GeoJSON"
         gj_options.fileEncoding = "UTF-8"
@@ -98,10 +115,19 @@ class FileExport:
                     f'Skipping layer "{layer_name}" - PMTile export not yet implemented'
                 )
             elif layer_format == "GeoParquet":
-                # TBD: Implement GeoParquet export
-                dialog.log_text_browser_qt.append(
-                    f'Skipping layer "{layer_name}" - GeoParquet export not yet implemented'
-                )
+                if self.is_geoparquet_wr_supported():
+                    output_path = os.path.join(output_dir, f"{layer_name}.parquet")
+                    dialog.log_text_browser_qt.append(
+                        f"Exporting GeoParquet layer: {layer_name}.parquet"
+                    )
+                    QgsVectorFileWriter.writeAsVectorFormatV3(
+                        layer, output_path, transform_context, gpq_options
+                    )
+                elif self.is_geoparquet_io_supported():
+                    # TBD: Implement geoparquet-io export
+                    dialog.log_text_browser_qt.append(
+                        f'Skipping layer "{layer_name}" - geoparquet-io export not yet implemented'
+                    )
 
         # Write map config file
         write_map = dialog.options_checkbox_map_qt.isChecked()
@@ -153,7 +179,10 @@ class FileExport:
             with open(map_output_path, "w", encoding="utf-8") as handle:
                 handle.write(map_config_txt)
 
-        # TBD: Show export complete message as a Plugin status bar message or popup dialog
+        iface.messageBar().pushMessage(
+            "Success",
+            f"Web Map Export completed to folder: {output_dir}.",
+            level=Qgis.Success)
         dialog.log_text_browser_qt.append("Export complete!\n")
 
     def _collect_selected_layers(self, dialog, item, selected_layers):
@@ -197,3 +226,25 @@ class FileExport:
             return sld_text.toString()
         except Exception:
             return None
+
+    def is_geoparquet_wr_supported(self):
+        """Check whether GeoParquet format is directly supported by QgsVectorFileWriter."""
+        if hasattr(self, "geoparquet_wr_supported"):
+            return self.geoparquet_wr_supported
+        driver = ogr.GetDriverByName("Parquet")
+        if driver is None:
+            self.geoparquet_wr_supported = False
+        else:
+            self.geoparquet_wr_supported = driver.TestCapability(ogr.ODrCCreateDataSource)
+        return self.geoparquet_wr_supported
+
+    def is_geoparquet_io_supported(self):
+        """Check whether geoparquet_io library is available for writing GeoParquet files."""
+        if hasattr(self, "geoparquet_io_available"):
+            return self.geoparquet_io_available
+        try:
+            import geoparquet_io  # type: ignore # noqa: F401
+            self.geoparquet_io_available = True
+        except ImportError:
+            self.geoparquet_io_available = False
+        return self.geoparquet_io_available

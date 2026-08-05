@@ -232,6 +232,18 @@ class WebMapExporter:
             self.first_start = False
             self.dlg = WebMapExporterDialog()
             self.dlg.set_export_handler(self.export_layers)
+
+            # Warn if GeoParquet is not supported by the GDAL/OGR installation
+            if not self.file_export.is_geoparquet_wr_supported():
+                self.dlg.log_text_browser_qt.append(
+                    "Warning: GeoParquet format is not supported by this GDAL/OGR installation.")
+                if not self.file_export.is_geoparquet_io_supported():
+                    self.dlg.log_text_browser_qt.append(
+                        "Warning: geoparquet-io library is not available either.\n"
+                        "Exporting to GeoParquet will not be possible.\n")
+                else:
+                    self.dlg.log_text_browser_qt.append(
+                        "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.\n")
         else:
             self.dlg.log_text_browser_qt.clear()
 
@@ -249,4 +261,4 @@ class WebMapExporter:
 
     def export_layers(self):
         """Delegate export work to the dedicated file exporter."""
-        self.file_export.export_layers(self.dlg, self.tr)
+        self.file_export.export_layers(self.dlg, self.iface, self.tr)

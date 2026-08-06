@@ -67,7 +67,6 @@ class WebMapExporter:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
-        self.file_export = FileExport(self)
 
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -81,7 +80,6 @@ class WebMapExporter:
         :rtype: str
         """
         return QCoreApplication.translate('WebMapExporter', message)
-
 
     def add_action(
         self,
@@ -231,6 +229,7 @@ class WebMapExporter:
         if self.first_start == True:
             self.first_start = False
             self.dlg = WebMapExporterDialog()
+            self.file_export = FileExport(self)
             self.dlg.set_export_handler(self.export_layers)
 
             # Warn if GeoParquet is not supported by the GDAL/OGR installation
@@ -261,4 +260,4 @@ class WebMapExporter:
 
     def export_layers(self):
         """Delegate export work to the dedicated file exporter."""
-        self.file_export.export_layers(self.dlg, self.iface, self.tr)
+        self.file_export.export_layers()

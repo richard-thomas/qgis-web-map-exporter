@@ -19,28 +19,30 @@ from qgis.core import (
 class FileExport:
     """Perform data and styling extraction from QGIS into files."""
 
-    def __init__(self, plugin=None):
-        self.plugin = plugin
+    def __init__(self, plugin):
+        self.dlg = plugin.dlg
+        self.iface = plugin.iface
+        self.tr = plugin.tr
         self.last_output_dir = None
 
-    def export_layers(self, dialog, iface, tr):
+    def export_layers(self):
         """Prompt for an output folder and write requested export files."""
 
         # Get selected layers and their requested export formats from UI
-        root = dialog.layers_tree_qt.invisibleRootItem()
+        root = self.dlg.layers_tree_qt.invisibleRootItem()
         selected_layers = []
         for index in range(root.childCount()):
             item = root.child(index)
-            self._collect_selected_layers(dialog, item, selected_layers)
+            self._collect_selected_layers(item, selected_layers)
 
         # If GeoParquet export is requested, stop export if not supported
         if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
                 any(layer_format == "GeoParquet" for _, _, layer_format in selected_layers)):
-            dialog.log_text_browser_qt.append(
+            self.dlg.log_text_browser_qt.append(
                 "GeoParquet export is not supported by the current QGIS installation.\n"
                 "Please install the 'Parquet' GDAL driver to enable GeoParquet export."
             )
-            iface.messageBar().pushMessage(
+            self.iface.messageBar().pushMessage(
                 "Error",
                 "Export aborted: GeoParquet export is not supported by the current QGIS installation.",
                 level=Qgis.Critical)
@@ -51,8 +53,8 @@ class FileExport:
             self.last_output_dir = QgsProject.instance().absolutePath() or os.path.expanduser("~")
 
         output_dir = QFileDialog.getExistingDirectory(
-            dialog,
-            tr("Select export folder"),
+            self.dlg,
+            self.tr("Select export folder"),
             self.last_output_dir,
         )
         if not output_dir:
@@ -60,9 +62,9 @@ class FileExport:
         self.last_output_dir = output_dir
 
         # Write SLD files for selected layers if requested
-        write_slds = dialog.options_checkbox_slds_qt.isChecked()
+        write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
         if write_slds:
-            dialog.log_text_browser_qt.append(
+            self.dlg.log_text_browser_qt.append(
                 f"Exporting SLD files for selected layers to: {output_dir}"
             )
             for layer_name, layer, _ in selected_layers:
@@ -94,16 +96,16 @@ class FileExport:
 
             if layer_format == "FlatGeoBuf":
                 output_path = os.path.join(output_dir, f"{layer_name}.fgb")
-                dialog.log_text_browser_qt.append(
+                self.dlg.log_text_browser_qt.append(
                     f"Exporting FlatGeobuf layer: {layer_name}.fgb"
                 )
-                dialog.log_text_browser_qt.append(f"- Layer source: {layer.source()}")
+                self.dlg.log_text_browser_qt.append(f"- Layer source: {layer.source()}")
                 QgsVectorFileWriter.writeAsVectorFormatV3(
                     layer, output_path, transform_context, fgb_options
                 )
             elif layer_format == "GeoJSON":
                 output_path = os.path.join(output_dir, f"{layer_name}.geojson")
-                dialog.log_text_browser_qt.append(
+                self.dlg.log_text_browser_qt.append(
                     f"Exporting GeoJSON layer: {layer_name}.geojson"
                 )
                 QgsVectorFileWriter.writeAsVectorFormatV3(
@@ -111,13 +113,13 @@ class FileExport:
                 )
             elif layer_format == "PMTile":
                 # TBD: Implement PMTile export
-                dialog.log_text_browser_qt.append(
+                self.dlg.log_text_browser_qt.append(
                     f'Skipping layer "{layer_name}" - PMTile export not yet implemented'
                 )
             elif layer_format == "GeoParquet":
                 if self.is_geoparquet_wr_supported():
                     output_path = os.path.join(output_dir, f"{layer_name}.parquet")
-                    dialog.log_text_browser_qt.append(
+                    self.dlg.log_text_browser_qt.append(
                         f"Exporting GeoParquet layer: {layer_name}.parquet"
                     )
                     QgsVectorFileWriter.writeAsVectorFormatV3(
@@ -125,14 +127,14 @@ class FileExport:
                     )
                 elif self.is_geoparquet_io_supported():
                     # TBD: Implement geoparquet-io export
-                    dialog.log_text_browser_qt.append(
+                    self.dlg.log_text_browser_qt.append(
                         f'Skipping layer "{layer_name}" - geoparquet-io export not yet implemented'
                     )
 
         # Write map config file
-        write_map = dialog.options_checkbox_map_qt.isChecked()
+        write_map = self.dlg.options_checkbox_map_qt.isChecked()
         if write_map:
-            dialog.log_text_browser_qt.append(f"Exporting map config file to: {output_dir}")
+            self.dlg.log_text_browser_qt.append(f"Exporting map config file to: {output_dir}")
 
             # Write a web map configuration JSONP file for the selected layers
             map_config_txt = "var mapConfig = "
@@ -179,15 +181,15 @@ class FileExport:
             with open(map_output_path, "w", encoding="utf-8") as handle:
                 handle.write(map_config_txt)
 
-        iface.messageBar().pushMessage(
+        self.iface.messageBar().pushMessage(
             "Success",
             f"Web Map Export completed to folder: {output_dir}.",
             level=Qgis.Success)
-        dialog.log_text_browser_qt.append("Export complete!\n")
+        self.dlg.log_text_browser_qt.append("Export complete!\n")
 
-    def _collect_selected_layers(self, dialog, item, selected_layers):
+    def _collect_selected_layers(self, item, selected_layers):
         if item.childCount() == 0:
-            widget = dialog.layers_tree_qt.itemWidget(item, 0)
+            widget = self.dlg.layers_tree_qt.itemWidget(item, 0)
             if widget is None:
                 return
 
@@ -206,7 +208,7 @@ class FileExport:
 
         for child_index in range(item.childCount()):
             child_item = item.child(child_index)
-            self._collect_selected_layers(dialog, child_item, selected_layers)
+            self._collect_selected_layers(child_item, selected_layers)
 
     def find_layer_by_name(self, layer_name):
         """Find a layer in the current project by its tree name."""

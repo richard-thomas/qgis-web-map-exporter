@@ -81,7 +81,7 @@ class FileExport:
         fgb_options.driverName = "FlatGeobuf"
         fgb_options.fileEncoding = "UTF-8"
         gpq_options = QgsVectorFileWriter.SaveVectorOptions()
-        gpq_options.driverName = "GeoParquet"
+        gpq_options.driverName = "Parquet"
         gpq_options.fileEncoding = "UTF-8"
         gj_options = QgsVectorFileWriter.SaveVectorOptions()
         gj_options.driverName = "GeoJSON"

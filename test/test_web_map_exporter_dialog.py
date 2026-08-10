@@ -2,10 +2,8 @@
 """Dialog tests for WebMapExporterDialog."""
 
 import pytest
-#from qgis.core import Qgis
-#from qgis.PyQt.QtWidgets import QDialogButtonBox, QDialog
 
-from web_map_exporter_dialog import WebMapExporterDialog
+from web_map_exporter.web_map_exporter_dialog import WebMapExporterDialog
 
 @pytest.fixture
 def dialog(qgis_app):

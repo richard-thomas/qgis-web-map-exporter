@@ -20,9 +20,10 @@ Qt UI initialisation for plugin.
 import os
 
 from qgis.PyQt import uic
-from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import QUrl
+from qgis.PyQt.QtWidgets import QDialog, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
+from qgis.PyQt.QtCore import QUrl, Qt
 from qgis.PyQt.QtGui import QDesktopServices
+from qgis.core import QgsProject, QgsLayerTreeGroup, QgsMapLayer
 
 from .file_export import FileExport
 
@@ -35,7 +36,7 @@ FORM_CLASS, _ = uic.loadUiType(
         'web_map_exporter_dialog_base.ui'))
 
 
-class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
+class WebMapExporterDialog(QDialog, FORM_CLASS):
     """Qt UI initialisation for 'Web Map Exporter' plugin.
 
     :param QtWidgets.QDialog: Qt6 UI dialog.
@@ -56,13 +57,65 @@ class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
         # Connect main dialog "Help" and "Export" buttons
         self.file_export = FileExport(self, plugin)
         self.button_export_qt.clicked.connect(self.file_export.export_selected_layers)
-        self.button_box_main_qt.helpRequested.connect(self.open_help_page)
-
-    def open_help_page(self):
-        """Open documentation page in the system's default browser"""
-        QDesktopServices.openUrl(QUrl(HELP_WEBPAGE_URL))
+        self.button_box_main_qt.helpRequested.connect(self._open_help_page)
 
     def log_message(self, message):
         """Write message to 'Output Log' tab in dialog window."""
         self.log_text_browser_qt.append(message)
         # TBD (optionally) write to folder on export
+
+    def load_project_layers(self):
+        """Fetch current project layers and populate the UI tree with layers only."""
+        self.layers_tree_qt.clear()
+        layer_nodes = QgsProject.instance().layerTreeRoot().children()
+        self._populate_layer_tree(None, layer_nodes)
+        self.layers_tree_qt.expandAll()
+
+    def _open_help_page(self):
+        """Open documentation page in the system's default browser"""
+        QDesktopServices.openUrl(QUrl(HELP_WEBPAGE_URL))
+
+    def _populate_layer_tree(self, parent_item, nodes):
+        """Recursively add layer and group nodes to the UI tree."""
+        for node in nodes:
+            if isinstance(node, QgsLayerTreeGroup):
+                # Add layer group to tree and recursively add its children
+                self.log_message(f'Traversing Group: {node.name()}')
+                group_item = QTreeWidgetItem()
+                group_item.setText(0, node.name())
+                if parent_item is None:
+                    self.layers_tree_qt.addTopLevelItem(group_item)
+                else:
+                    parent_item.addChild(group_item)
+                self._populate_layer_tree(group_item, node.children())
+            else:
+                # Add layer to tree
+                layer_item = QTreeWidgetItem()
+                row_widget = QWidget()
+                row_layout = QHBoxLayout(row_widget)
+                row_layout.setContentsMargins(0, 0, 5, 0)
+                row_layout.setSpacing(4)
+                lyr_check_box = QCheckBox()
+                lyr_label = QLabel(node.name())
+                lyr_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+                lyr_combo_box = QComboBox()
+                row_layout.addWidget(lyr_check_box, alignment=Qt.AlignmentFlag.AlignLeft)
+                row_layout.addWidget(lyr_label, alignment=Qt.AlignmentFlag.AlignLeft)
+                row_layout.addStretch(1)
+                row_layout.addWidget(lyr_combo_box, alignment=Qt.AlignmentFlag.AlignRight)
+
+                if node.layer().type() == QgsMapLayer.LayerType.Vector:
+                    self.log_message(f'Adding Vector Layer: {node.name()}')
+                    lyr_combo_box.addItems(['FlatGeoBuf', 'PMTile', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
+                else:
+                    self.log_message(
+                        f'Adding Non-Vector Layer (Placeholder only): {node.name()}')
+                    lyr_combo_box.addItems(['(Placeholder)'])
+                    lyr_label.setStyleSheet('color: gray; font-style: italic;')
+
+                if parent_item is None:
+                    self.layers_tree_qt.addTopLevelItem(layer_item)
+                else:
+                    parent_item.addChild(layer_item)
+
+                self.layers_tree_qt.setItemWidget(layer_item, 0, row_widget)

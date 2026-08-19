@@ -18,10 +18,10 @@ Top level class definition to give QGIS required methods for plugin startup/shut
 """
 import os.path
 
-from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
-from qgis.core import QgsProject, QgsSettings, QgsLayerTreeGroup, QgsMapLayer
+from qgis.core import QgsSettings
+from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
+from qgis.PyQt.QtWidgets import QAction
 
 from .web_map_exporter_dialog import WebMapExporterDialog
 
@@ -30,7 +30,7 @@ class WebMapExporter:
     """'Web Map Exporter' QGIS Plugin startup/shutdown implementation."""
 
     def __init__(self, iface):
-        """Constructor.
+        """Top level QGIS Plugin constructor.
 
         :param iface: An interface instance that will be passed to this class
             which provides the hook by which you can manipulate the QGIS
@@ -168,67 +168,19 @@ class WebMapExporter:
                 action)
             self.iface.removeToolBarIcon(action)
 
-    def _populate_layer_tree(self, parent_item, nodes):
-        """Recursively add layer and group nodes to the UI tree."""
-        for node in nodes:
-            if isinstance(node, QgsLayerTreeGroup):
-                # Add layer group to tree and recursively add its children
-                self.dlg.log_message(f'Traversing Group: {node.name()}')
-                group_item = QTreeWidgetItem()
-                group_item.setText(0, node.name())
-                if parent_item is None:
-                    self.dlg.layers_tree_qt.addTopLevelItem(group_item)
-                else:
-                    parent_item.addChild(group_item)
-                self._populate_layer_tree(group_item, node.children())
-            else:
-                # Add layer to tree
-                layer_item = QTreeWidgetItem()
-                row_widget = QWidget()
-                row_layout = QHBoxLayout(row_widget)
-                row_layout.setContentsMargins(0, 0, 5, 0)
-                row_layout.setSpacing(4)
-                lyr_check_box = QCheckBox()
-                lyr_label = QLabel(node.name())
-                lyr_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-                lyr_combo_box = QComboBox()
-                row_layout.addWidget(lyr_check_box, alignment=Qt.AlignmentFlag.AlignLeft)
-                row_layout.addWidget(lyr_label, alignment=Qt.AlignmentFlag.AlignLeft)
-                row_layout.addStretch(1)
-                row_layout.addWidget(lyr_combo_box, alignment=Qt.AlignmentFlag.AlignRight)
-
-                if node.layer().type() == QgsMapLayer.LayerType.Vector:
-                    self.dlg.log_message(f'Adding Vector Layer: {node.name()}')
-                    lyr_combo_box.addItems(['FlatGeoBuf', 'PMTile', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
-                else:
-                    self.dlg.log_message(
-                        f'Adding Non-Vector Layer (Placeholder only): {node.name()}')
-                    lyr_combo_box.addItems(['(Placeholder)'])
-                    lyr_label.setStyleSheet('color: gray; font-style: italic;')
-
-                if parent_item is None:
-                    self.dlg.layers_tree_qt.addTopLevelItem(layer_item)
-                else:
-                    parent_item.addChild(layer_item)
-
-                self.dlg.layers_tree_qt.setItemWidget(layer_item, 0, row_widget)
-
     def run(self):
-        """Run method that performs all the real work."""
+        """Called each time the plugin dialog is opened."""
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
             self.dlg = WebMapExporterDialog(self)
         else:
-            # Clear "log" tab on subsequent times plugin is restarted
+            # Clear "Output Log" tab on subsequent times plugin is restarted
             self.dlg.log_text_browser_qt.clear()
 
         # Fetch current project layers and populate the UI tree with layers only
-        self.dlg.layers_tree_qt.clear()
-        layer_nodes = QgsProject.instance().layerTreeRoot().children()
-        self._populate_layer_tree(None, layer_nodes)
-        self.dlg.layers_tree_qt.expandAll()
+        self.dlg.load_project_layers()
 
         # Display the dialog
         self.dlg.show()

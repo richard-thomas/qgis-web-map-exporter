@@ -56,6 +56,7 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
 
         # Connect main dialog "Help" and "Export" buttons
         self.file_export = FileExport(self, plugin)
+        self.button_reload_qt.clicked.connect(self.load_project_layers)
         self.button_export_qt.clicked.connect(self.file_export.export_selected_layers)
         self.button_box_main_qt.helpRequested.connect(self._open_help_page)
 
@@ -71,6 +72,9 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
         self._populate_layer_tree(None, layer_nodes)
         self.layers_tree_qt.expandAll()
 
+        # Switch tab to Layers tab so user can see new layer tree
+        self.tab_widget_qt.setCurrentWidget(self.tab_layers_qt)
+
     def _open_help_page(self):
         """Open documentation page in the system's default browser"""
         QDesktopServices.openUrl(QUrl(HELP_WEBPAGE_URL))
@@ -80,7 +84,7 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
         for node in nodes:
             if isinstance(node, QgsLayerTreeGroup):
                 # Add layer group to tree and recursively add its children
-                self.log_message(f'Traversing Group: {node.name()}')
+                #self.log_message(f'Traversing Group: {node.name()}')
                 group_item = QTreeWidgetItem()
                 group_item.setText(0, node.name())
                 if parent_item is None:
@@ -105,11 +109,11 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
                 row_layout.addWidget(lyr_combo_box, alignment=Qt.AlignmentFlag.AlignRight)
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
-                    self.log_message(f'Adding Vector Layer: {node.name()}')
+                    #self.log_message(f'Adding Vector Layer: {node.name()}')
                     lyr_combo_box.addItems(['FlatGeoBuf', 'PMTile', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
                 else:
-                    self.log_message(
-                        f'Adding Non-Vector Layer (Placeholder only): {node.name()}')
+                    #self.log_message(
+                    #    f'Adding Non-Vector Layer (Placeholder only): {node.name()}')
                     lyr_combo_box.addItems(['(Placeholder)'])
                     lyr_label.setStyleSheet('color: gray; font-style: italic;')
 

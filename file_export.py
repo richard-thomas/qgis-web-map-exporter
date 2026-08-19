@@ -321,6 +321,8 @@ class FileExport:
             sld_text = layer.exportSldStyleV3(context)
             return sld_text.toString()
         except Exception:
+            self.dlg.log_message("WARNING: Unable to extract SLD for layer '"
+                + layer.name() + "' - layer will not be styled in web map.")
             return None
 
     def _sld_qgis_tweak(self, sld_text, layer_info):

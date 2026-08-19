@@ -115,6 +115,6 @@ async function loadSldStyle(sldUrl, vectorLayer) {
 
         vectorLayer.setStyle(styleFunction);
     } catch (error) {
-        console.error('Error occurred loading SLD file:', error);
+        console.error(`Error occurred loading SLD file '${sldUrl}':\n  ${error}`);
     }
 }

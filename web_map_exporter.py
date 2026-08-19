@@ -24,7 +24,6 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
 
 from .web_map_exporter_dialog import WebMapExporterDialog
-from .file_export import FileExport
 
 
 class WebMapExporter:
@@ -220,21 +219,7 @@ class WebMapExporter:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            self.dlg = WebMapExporterDialog()
-            self.file_export = FileExport(self)
-            self.dlg.set_export_handler(self.export_layers)
-
-            # Warn if GeoParquet is not supported by the GDAL/OGR installation
-            if not self.file_export.is_geoparquet_wr_supported():
-                self.dlg.log_message(
-                    "Warning: GeoParquet format is not supported by this GDAL/OGR installation.")
-                if not self.file_export.is_geoparquet_io_supported():
-                    self.dlg.log_message(
-                        "Warning: geoparquet-io library is not available either.\n"
-                        "Exporting to GeoParquet will not be possible.\n")
-                else:
-                    self.dlg.log_message(
-                        "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.\n")
+            self.dlg = WebMapExporterDialog(self)
         else:
             # Clear "log" tab on subsequent times plugin is restarted
             self.dlg.log_text_browser_qt.clear()
@@ -250,12 +235,3 @@ class WebMapExporter:
 
         # Run dialog event loop
         self.dlg.exec()
-
-    def export_layers(self):
-        """Export button handler - hands over to FileExport module"""
-
-        # Switch tab to log tab so user can see progress messages
-        self.dlg.tab_widget_qt.setCurrentWidget(self.dlg.tab_output_qt)
-        self.dlg.log_message(
-            "\nStarting Web Map Export...")
-        self.file_export.export_layers()

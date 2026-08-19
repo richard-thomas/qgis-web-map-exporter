@@ -24,6 +24,8 @@ from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QUrl
 from qgis.PyQt.QtGui import QDesktopServices
 
+from .file_export import FileExport
+
 HELP_WEBPAGE_URL = 'https://github.com/richard-thomas/qgis-web-map-exporter/blob/main/README.md'
 
 # Load .ui file so PyQt can populate plugin with elements from QtCreator
@@ -40,31 +42,25 @@ class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
     :param FORM_CLASS: Loader for Qt6 UI elements from QtCreator .ui file.
     """
 
-    def __init__(self, parent=None):
-        """Initialize UI dialog and connect buttons to their handlers."""
-        super(WebMapExporterDialog, self).__init__(parent)
+    def __init__(self, plugin):
+        """Initialize UI dialog and connect buttons to their handlers.
+
+        :param plugin: QGIS plugin instance
+        """
+        super(WebMapExporterDialog, self).__init__(None)
 
         # Set up user interface designed in QtCreator through FORM_CLASS
         self.setupUi(self)
 
-        # Connect main dialog "Help" button
-        self.button_box_main_qt.helpRequested.connect(self.open_help_page)
-        self.button_export_qt.clicked.connect(self._handle_export_click)
 
-        self._export_handler = None
+        # Connect main dialog "Help" and "Export" buttons
+        self.file_export = FileExport(self, plugin)
+        self.button_export_qt.clicked.connect(self.file_export.export_selected_layers)
+        self.button_box_main_qt.helpRequested.connect(self.open_help_page)
 
     def open_help_page(self):
         """Open documentation page in the system's default browser"""
         QDesktopServices.openUrl(QUrl(HELP_WEBPAGE_URL))
-
-    def set_export_handler(self, handler):
-        """Register a callback to run when the export button is clicked."""
-        self._export_handler = handler
-
-    def _handle_export_click(self):
-        """Run the registered export handler if one was provided."""
-        if self._export_handler is not None:
-            self._export_handler()
 
     def log_message(self, message):
         """Write message to 'Output Log' tab in dialog window."""

@@ -46,12 +46,13 @@ from qgis.core import (
 class PMTilesExport:
     """Export QGIS layers to PMTiles files via OGC GeoPackage."""
 
-    def __init__(self, plugin):
+    def __init__(self, dialog, plugin):
         """Initialize PMTiles file exporter.
 
+        :param dialog: QGIS plugin Qt dialog instance
         :param plugin: QGIS plugin instance
         """
-        self.dlg = plugin.dlg
+        self.dlg = dialog
         self.iface = plugin.iface
         self.tr = plugin.tr
         self.project = QgsProject.instance()

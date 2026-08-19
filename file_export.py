@@ -43,20 +43,37 @@ STYLES_DIR_NAME = "styles"
 class FileExport:
     """Export QGIS layer data, styling and web map configuration to files."""
 
-    def __init__(self, plugin):
+    def __init__(self, dialog, plugin):
         """Initialize general file exporter and PMTiles exporter class.
 
+        :param dialog: QGIS plugin Qt dialog instance
         :param plugin: QGIS plugin instance
         """
-        self.dlg = plugin.dlg
+        self.dlg = dialog
         self.iface = plugin.iface
         self.tr = plugin.tr
         self.last_output_dir = None
-        self.pmtiles_exporter = PMTilesExport(plugin)
+        self.pmtiles_exporter = PMTilesExport(dialog, plugin)
 
+        # Warn if GeoParquet is not supported by the GDAL/OGR installation
+        if not self.is_geoparquet_wr_supported():
+            self.dlg.log_message(
+                "Warning: GeoParquet format is not supported by this GDAL/OGR installation.")
+            if not self.is_geoparquet_io_supported():
+                self.dlg.log_message(
+                    "Warning: geoparquet-io library is not available either.\n"
+                    "Exporting to GeoParquet will not be possible.\n")
+            else:
+                self.dlg.log_message(
+                    "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.\n")
 
-    def export_layers(self):
+    def export_selected_layers(self):
         """Prompt for an output folder and write requested export files."""
+        # Switch tab to log tab so user can see progress messages
+        self.dlg.tab_widget_qt.setCurrentWidget(self.dlg.tab_output_qt)
+        self.dlg.log_message(
+            "\nStarting Web Map Export...")
+
         # Get selected layers and their requested export formats from UI
         root = self.dlg.layers_tree_qt.invisibleRootItem()
         selected_layers = []

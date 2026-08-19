@@ -174,7 +174,7 @@ class WebMapExporter:
         for node in nodes:
             if isinstance(node, QgsLayerTreeGroup):
                 # Add layer group to tree and recursively add its children
-                self.dlg.log_text_browser_qt.append(f'Traversing Group: {node.name()}')
+                self.dlg.log_message(f'Traversing Group: {node.name()}')
                 group_item = QTreeWidgetItem()
                 group_item.setText(0, node.name())
                 if parent_item is None:
@@ -199,10 +199,10 @@ class WebMapExporter:
                 row_layout.addWidget(lyr_combo_box, alignment=Qt.AlignmentFlag.AlignRight)
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
-                    self.dlg.log_text_browser_qt.append(f'Adding Vector Layer: {node.name()}')
+                    self.dlg.log_message(f'Adding Vector Layer: {node.name()}')
                     lyr_combo_box.addItems(['FlatGeoBuf', 'PMTile', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
                 else:
-                    self.dlg.log_text_browser_qt.append(
+                    self.dlg.log_message(
                         f'Adding Non-Vector Layer (Placeholder only): {node.name()}')
                     lyr_combo_box.addItems(['(Placeholder)'])
                     lyr_label.setStyleSheet('color: gray; font-style: italic;')
@@ -226,14 +226,14 @@ class WebMapExporter:
 
             # Warn if GeoParquet is not supported by the GDAL/OGR installation
             if not self.file_export.is_geoparquet_wr_supported():
-                self.dlg.log_text_browser_qt.append(
+                self.dlg.log_message(
                     "Warning: GeoParquet format is not supported by this GDAL/OGR installation.")
                 if not self.file_export.is_geoparquet_io_supported():
-                    self.dlg.log_text_browser_qt.append(
+                    self.dlg.log_message(
                         "Warning: geoparquet-io library is not available either.\n"
                         "Exporting to GeoParquet will not be possible.\n")
                 else:
-                    self.dlg.log_text_browser_qt.append(
+                    self.dlg.log_message(
                         "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.\n")
         else:
             # Clear "log" tab on subsequent times plugin is restarted
@@ -256,6 +256,6 @@ class WebMapExporter:
 
         # Switch tab to log tab so user can see progress messages
         self.dlg.tab_widget_qt.setCurrentWidget(self.dlg.tab_output_qt)
-        self.dlg.log_text_browser_qt.append(
+        self.dlg.log_message(
             "\nStarting Web Map Export...")
         self.file_export.export_layers()

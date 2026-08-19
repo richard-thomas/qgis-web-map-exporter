@@ -24,6 +24,8 @@ from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QUrl
 from qgis.PyQt.QtGui import QDesktopServices
 
+HELP_WEBPAGE_URL = 'https://github.com/richard-thomas/qgis-web-map-exporter/blob/main/README.md'
+
 # Load .ui file so PyQt can populate plugin with elements from QtCreator
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(
@@ -53,8 +55,7 @@ class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def open_help_page(self):
         """Open documentation page in the system's default browser"""
-        help_webpage_url = 'https://github.com/richard-thomas/qgis-web-map-exporter/blob/main/README.md'
-        QDesktopServices.openUrl(QUrl(help_webpage_url))
+        QDesktopServices.openUrl(QUrl(HELP_WEBPAGE_URL))
 
     def set_export_handler(self, handler):
         """Register a callback to run when the export button is clicked."""
@@ -64,3 +65,8 @@ class WebMapExporterDialog(QtWidgets.QDialog, FORM_CLASS):
         """Run the registered export handler if one was provided."""
         if self._export_handler is not None:
             self._export_handler()
+
+    def log_message(self, message):
+        """Write message to 'Output Log' tab in dialog window."""
+        self.log_text_browser_qt.append(message)
+        # TBD (optionally) write to folder on export

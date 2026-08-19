@@ -79,7 +79,7 @@ class FileExport:
         # If GeoParquet export is requested, stop export if not supported
         if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
                 any(layer_info["out_format"] == "GeoParquet" for layer_info in selected_layers)):
-            self.dlg.log_text_browser_qt.append(
+            self.dlg.log_message(
                 "GeoParquet export is not supported by the current QGIS installation.\n"
                 "Please install the 'Parquet' GDAL driver to enable GeoParquet export."
             )
@@ -109,19 +109,19 @@ class FileExport:
         try:
             Path(output_data_dir).mkdir(exist_ok=True)
         except Exception as e:
-            self.dlg.log_text_browser_qt.append(f'Export aborted: Error creating "{DATA_DIR_NAME}" directory: {e}')
+            self.dlg.log_message(f'Export aborted: Error creating "{DATA_DIR_NAME}" directory: {e}')
             return
         output_styles_dir = os.path.join(output_dir, STYLES_DIR_NAME)
         try:
             Path(output_styles_dir).mkdir(exist_ok=True)
         except Exception as e:
-            self.dlg.log_text_browser_qt.append(f'Export aborted: Error creating "{STYLES_DIR_NAME}" directory: {e}')
+            self.dlg.log_message(f'Export aborted: Error creating "{STYLES_DIR_NAME}" directory: {e}')
             return
 
         # Write SLD files for selected layers if requested
         write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
         if write_slds:
-            self.dlg.log_text_browser_qt.append(
+            self.dlg.log_message(
                 f"Exporting SLD files for selected layers to: {output_styles_dir}"
             )
             for layer_info in selected_layers:
@@ -163,27 +163,27 @@ class FileExport:
 
             if layer_format == "FlatGeoBuf":
                 output_path = os.path.join(output_data_dir, f"{layer_name}.fgb")
-                self.dlg.log_text_browser_qt.append(
+                self.dlg.log_message(
                     f"Exporting FlatGeobuf layer: {layer_name}"
                 )
-                self.dlg.log_text_browser_qt.append(f"- Layer source: {layer.source()}")
+                self.dlg.log_message(f"- Layer source: {layer.source()}")
                 return_code, error_message, written_filename, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
                     layer, output_path, transform_context, fgb_options
                 )
                 if return_code != QgsVectorFileWriter.NoError:
-                    self.dlg.log_text_browser_qt.append(
+                    self.dlg.log_message(
                         f"Error exporting FlatGeobuf layer '{layer_name}': {error_message}"
                     )
             elif layer_format == "GeoJSON":
                 output_path = os.path.join(output_data_dir, f"{layer_name}.geojson")
-                self.dlg.log_text_browser_qt.append(
+                self.dlg.log_message(
                     f"Exporting GeoJSON layer: {layer_name}"
                 )
                 return_code, error_message, written_filename, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
                     layer, output_path, transform_context, gj_options
                 )
                 if return_code != QgsVectorFileWriter.NoError:
-                    self.dlg.log_text_browser_qt.append(
+                    self.dlg.log_message(
                         f"Error exporting GeoJSON layer '{layer_name}': {error_message}"
                     )
             elif layer_format == "PMTile":
@@ -192,36 +192,36 @@ class FileExport:
             elif layer_format == "GeoParquet":
                 if self.is_geoparquet_wr_supported():
                     output_path = os.path.join(output_data_dir, f"{layer_name}.parquet")
-                    self.dlg.log_text_browser_qt.append(
+                    self.dlg.log_message(
                         f"Exporting GeoParquet layer: {layer_name}.parquet"
                     )
                     return_code, error_message, written_filename, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
                         layer, output_path, transform_context, gpq_options
                     )
                     if return_code != QgsVectorFileWriter.NoError:
-                        self.dlg.log_text_browser_qt.append(
+                        self.dlg.log_message(
                             f"Error exporting GeoParquet layer '{layer_name}': {error_message}"
                         )
                 elif self.is_geoparquet_io_supported():
                     # TBD: Implement geoparquet-io export
-                    self.dlg.log_text_browser_qt.append(
+                    self.dlg.log_message(
                         f'Skipping layer "{layer_name}" - geoparquet-io export not yet implemented'
                     )
 
             if not written_filename:
-                self.dlg.log_text_browser_qt.append(
+                self.dlg.log_message(
                     f"- Skipping layer '{layer_name}' - (failed to write file or unsupported format: {layer_format})"
                 )
                 layer_info["data_url"] = ""
                 continue
             data_url = f"{DATA_DIR_NAME}/{Path(written_filename).name}"
             layer_info["data_url"] = data_url
-            self.dlg.log_text_browser_qt.append(f"- Layer source URL: {data_url}")
+            self.dlg.log_message(f"- Layer source URL: {data_url}")
 
         # Write map config file
         write_map = self.dlg.options_checkbox_map_qt.isChecked()
         if write_map:
-            self.dlg.log_text_browser_qt.append(f"Exporting map config file to: {output_dir}")
+            self.dlg.log_message(f"Exporting map config file to: {output_dir}")
 
             # Write a web map configuration JSONP file for the selected layers
             map_config_txt = "var mapConfig = "
@@ -274,7 +274,7 @@ class FileExport:
             "Success",
             f"Web Map Export completed to folder: {output_dir}.",
             level=Qgis.Success)
-        self.dlg.log_text_browser_qt.append("Export complete!\n")
+        self.dlg.log_message("Export complete!\n")
 
     def _collect_selected_layers(self, item, selected_layers):
         """Get information from selected layers (only) of UI dialog."""
@@ -335,7 +335,7 @@ class FileExport:
         # If we find an <ExternalGraphic> element, add size and displacement attributes to the <Graphic> element
         ext_graphic_pattern = re.compile(r'(<se:Graphic>\s+<se:ExternalGraphic>.*?</se:ExternalGraphic>)(\s+</se:Graphic>)', re.DOTALL)
         while ext_graphic_pattern.search(sld_text):
-            self.dlg.log_text_browser_qt.append(
+            self.dlg.log_message(
                 f"INFO: inserting missing size/displacement for SLD <Graphic> element in '{layer_info['name']}'"
             )
 
@@ -368,7 +368,7 @@ class FileExport:
         # as a local path, i.e. starting with '/' (linux) or 'C:/' (Windows)
         qgis_local_svg_pattern = re.compile(r'(OnlineResource .*xlink:href=)[\\]?"[A-Z]?[:]?\/.*\/svg\/')
         while qgis_local_svg_pattern.search(sld_text):
-            self.dlg.log_text_browser_qt.append(
+            self.dlg.log_message(
                 f"WARNING: replacing QGIS local SVG path with GitHub version in '{layer_info['name']}.sld'"
             )
 

@@ -75,7 +75,10 @@ for (const layer of dataLayersConfig) {
     // TBD: handle PMTiles raster sources which also end .pmtiles
     } else if (dataUrl.endsWith('.pmtiles')) {
         vectorLayer = new ol.layer.VectorTile({
-            source: new olpmtiles.PMTilesVectorSource({ url: dataUrl }),
+            source: new olpmtiles.PMTilesVectorSource({
+                url: dataUrl,
+                projection: displayProjection
+            }),
         });
 
     // GeoJSON data source

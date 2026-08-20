@@ -40,7 +40,6 @@ from qgis.core import (
     QgsVectorFileWriter,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
-    QgsCoordinateTransformContext,
 )
 
 class PMTilesExport:
@@ -57,8 +56,7 @@ class PMTilesExport:
         self.tr = plugin.tr
         self.project = QgsProject.instance()
 
-        # Target CRS (Web Mercator)
-        # TBD: make configurable as using OpenLayers
+        # PMTiles Target CRS is fixed at EPSG:3857 (Web Mercator)
         self.target_crs = QgsCoordinateReferenceSystem("EPSG:3857")
 
     def export_single_pmtiles(self, layer, output_dir, ui_options):
@@ -97,7 +95,7 @@ class PMTilesExport:
         :param gpkg_path: Output GeoPackage path
         :param clip_rect: Optional QgsRectangle in EPSG:3857 to spatially clip features
         """
-        transform_context = QgsCoordinateTransformContext()
+        transform_context = QgsProject.instance().transformContext()
 
         for i, layer in enumerate(layers):
             layer_name = self._sanitize_layer_name(layer.name())
@@ -114,16 +112,8 @@ class PMTilesExport:
             else:
                 options.actionOnExistingFile = QgsVectorFileWriter.ActionOnExistingFile.CreateOrOverwriteLayer
 
-            # Transform to Web Mercator. Reproject from ANY valid source CRS; a layer
-            # with an invalid/unset CRS can't be placed on a web map, so warn and skip
-            # it (rather than emit points at null island or a dangling source).
+            # Transform to Web Mercator. Reproject from source CRS.
             src_crs = layer.crs()
-            if not src_crs.isValid():
-                self.dlg.log_message(
-                    f"  Skipping '{layer_name}': layer has no valid CRS — set one in QGIS "
-                    f"(Layer Properties ▸ Source) and re-export."
-                )
-                continue
             if src_crs != self.target_crs:
                 options.ct = QgsCoordinateTransform(
                     src_crs,

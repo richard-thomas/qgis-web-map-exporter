@@ -26,7 +26,6 @@ from pyproj import CRS
 from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.core import (
     QgsCoordinateTransform,
-    QgsCoordinateTransformContext,
     QgsCoordinateReferenceSystem,
     QgsProject,
     QgsRectangle,
@@ -144,23 +143,33 @@ class FileExport:
             f"--> Exporting source data for selected layers to:\n  {output_data_dir}"
         )
 
-        # Set up data formats options
-        transform_context = QgsCoordinateTransformContext()
-        fgb_options = QgsVectorFileWriter.SaveVectorOptions()
-        fgb_options.driverName = "FlatGeobuf"
-        fgb_options.fileEncoding = "UTF-8"
-        gpq_options = QgsVectorFileWriter.SaveVectorOptions()
-        gpq_options.driverName = "Parquet"
-        gpq_options.fileEncoding = "UTF-8"
-        gj_options = QgsVectorFileWriter.SaveVectorOptions()
-        gj_options.driverName = "GeoJSON"
-        gj_options.fileEncoding = "UTF-8"
+        # Set up common writeAsVectorFormatV3() parameters
+        transform_context = QgsProject.instance().transformContext()
+        target_crs = ui_options["target_crs"]
+        sv_options = QgsVectorFileWriter.SaveVectorOptions()
+        sv_options.fileEncoding = "UTF-8"
+        sv_options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
 
         # Write out data in requested formats
         for layer_info in selected_layers:
             layer = layer_info["item"]
             layer_name = layer_info["name"]
             layer_format = layer_info["out_format"]
+            layer_crs = layer.crs()
+
+            # If the layer's CRS is different from the requested output CRS,
+            #  set up a coordinate transform
+            if layer_crs.authid() != target_crs:
+                self.dlg.log_message(
+                    f"Transforming layer '{layer_name}' from {layer_crs.authid()} to {target_crs}"
+                )
+                sv_options.ct = QgsCoordinateTransform(
+                    layer_crs,
+                    QgsCoordinateReferenceSystem(target_crs),
+                    QgsProject.instance(),
+                )
+            else:
+                sv_options.ct = QgsCoordinateTransform()
 
             # Actual filename written to disk (may differ from layer name if sanitized)
             written_filename = None
@@ -175,8 +184,9 @@ class FileExport:
                 # (e.g. multiple layers with the same source data, but different styling)
                 #self.dlg.log_message(f"- Layer source: {layer.source()}")
 
+                sv_options.driverName = "FlatGeobuf"
                 return_code, error_message, written_filename, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
-                    layer, output_path, transform_context, fgb_options
+                    layer, output_path, transform_context, sv_options
                 )
                 if return_code != QgsVectorFileWriter.NoError:
                     self.dlg.log_message(
@@ -187,8 +197,9 @@ class FileExport:
                 self.dlg.log_message(
                     f"Exporting GeoJSON layer: {layer_name}"
                 )
+                sv_options.driverName = "GeoJSON"
                 return_code, error_message, written_filename, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
-                    layer, output_path, transform_context, gj_options
+                    layer, output_path, transform_context, sv_options
                 )
                 if return_code != QgsVectorFileWriter.NoError:
                     self.dlg.log_message(
@@ -204,8 +215,9 @@ class FileExport:
                     self.dlg.log_message(
                         f"Exporting GeoParquet layer: {layer_name}.parquet"
                     )
+                    sv_options.driverName = "Parquet"
                     return_code, error_message, written_filename, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
-                        layer, output_path, transform_context, gpq_options
+                        layer, output_path, transform_context, sv_options
                     )
                     if return_code != QgsVectorFileWriter.NoError:
                         self.dlg.log_message(
@@ -214,12 +226,12 @@ class FileExport:
                 elif self.is_geoparquet_io_supported():
                     # TBD: Implement geoparquet-io export
                     self.dlg.log_message(
-                        f"Skipping layer '{layer_name}' - geoparquet-io export not yet implemented"
+                        f"WARNING: Skipping layer '{layer_name}' - geoparquet-io export not yet implemented"
                     )
 
             if not written_filename:
                 self.dlg.log_message(
-                    f"- Skipping layer '{layer_name}' - (failed to write file or unsupported format: {layer_format})"
+                    f"WARNING: Skipping layer '{layer_name}' - (failed to write file or unsupported format: {layer_format})"
                 )
                 layer_info["data_url"] = ""
                 continue

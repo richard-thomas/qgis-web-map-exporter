@@ -149,6 +149,12 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
             if layer_item is None:
                 self.log_message(f"WARNING: Skipping layer '{layer_name}' as not found in project")
                 return
+            if not layer_item.crs().isValid():
+                self.log_message(
+                    f"WARNING: Skipping layer '{layer_name}' as it has no valid CRS - set one in QGIS "
+                    f"(Layer Properties ▸ Source) and re-export."
+                )
+                return
             selected_layers.append({
                 "name": layer_name,
                 "item": layer_item,

@@ -81,6 +81,8 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
 
     def _do_export(self):
         """Export the layers selected in the dialog."""
+        self.log_message("\nStarting Web Map Export...")
+
         # Get selected layers and their requested export formats from UI
         root = self.layers_tree_qt.invisibleRootItem()
         selected_layers = []
@@ -144,6 +146,9 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
             layer_format = format_combobox.currentText()
 
             layer_item = self._find_layer_by_name(layer_name)
+            if layer_item is None:
+                self.log_message(f"WARNING: Skipping layer '{layer_name}' as not found in project")
+                return
             selected_layers.append({
                 "name": layer_name,
                 "item": layer_item,

@@ -77,7 +77,6 @@ class FileExport:
         """
         # Switch Plugin UI to "Output Log" tab so user can see progress messages
         self.dlg.tab_widget_qt.setCurrentWidget(self.dlg.tab_output_qt)
-        self.dlg.log_message("\nStarting Web Map Export...")
 
         # If GeoParquet export is requested, stop export if not supported
         if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
@@ -163,9 +162,6 @@ class FileExport:
             layer_name = layer_info["name"]
             layer_format = layer_info["out_format"]
 
-            if layer is None:
-                continue
-
             # Actual filename written to disk (may differ from layer name if sanitized)
             written_filename = None
 
@@ -218,7 +214,7 @@ class FileExport:
                 elif self.is_geoparquet_io_supported():
                     # TBD: Implement geoparquet-io export
                     self.dlg.log_message(
-                        f'Skipping layer "{layer_name}" - geoparquet-io export not yet implemented'
+                        f"Skipping layer '{layer_name}' - geoparquet-io export not yet implemented"
                     )
 
             if not written_filename:
@@ -247,8 +243,6 @@ class FileExport:
             return
 
         for layer_info in selected_layers:
-            if layer_info["item"] is None:
-                continue
             sld_text = self._get_layer_sld(layer_info["item"])
             if sld_text is None:
                 continue
@@ -326,9 +320,6 @@ class FileExport:
 
     def _get_layer_sld(self, layer):
         """Return SLD content for a layer if it is available."""
-        if layer is None:
-            return None
-
         try:
             context = QgsSldExportContext()
             sld_text = layer.exportSldStyleV3(context)

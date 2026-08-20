@@ -176,8 +176,7 @@ class PMTilesExport:
         output_dir = os.path.dirname(pmtiles_path)
 
         # Build ogr2ogr command
-        #max_zoom = self.settings.get("max_zoom", 6)
-        max_zoom = 17 # TBD: make this configurable in the UI
+        max_zoom = self.dlg.pmtiles_max_zoom_qt.value()
 
         self.dlg.log_message(f"  Max zoom: {max_zoom}",)
         self.dlg.log_message(f"  Output: {pmtiles_path}",)

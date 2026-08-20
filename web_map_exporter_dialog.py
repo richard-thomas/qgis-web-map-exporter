@@ -75,6 +75,10 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
         # Switch tab to Layers tab so user can see new layer tree
         self.tab_widget_qt.setCurrentWidget(self.tab_layers_qt)
 
+        # Set "Web Map Title" field from QGIS project title
+        project_title = QgsProject.instance().title()
+        self.option_title_qt.setText(project_title)
+
     def _open_help_page(self):
         """Open documentation page in the system's default browser"""
         QDesktopServices.openUrl(QUrl(HELP_WEBPAGE_URL))

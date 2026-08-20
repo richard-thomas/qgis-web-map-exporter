@@ -6,8 +6,9 @@
 const loadingStrategy = (extent) => [extent];
 
 // Get some custom settings from map_config.js
-const displayProjection = mapConfig['displayProjection'];
-const initialMapExtent = mapConfig['initialMapExtent'];
+const displayProjection = mapConfig.displayProjection;
+const initialMapExtent = mapConfig.initialMapExtent;
+document.title = mapConfig.pageTitle;
 
 // Create map with various controls and an example OpenStreetMap baselayer
 const map = new ol.Map({
@@ -40,7 +41,7 @@ map.getView().fit(initialMapExtent, {
 })
 
 // Load data layers and styles defined in map_config.js
-const dataLayersConfig = mapConfig['dataLayersConfig'];
+const dataLayersConfig = mapConfig.dataLayersConfig;
 let dataLayerList = [];
 for (const layer of dataLayersConfig) {
     let vectorLayer;

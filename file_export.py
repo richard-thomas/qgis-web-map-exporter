@@ -243,6 +243,7 @@ class FileExport:
             # Write a web map configuration JSONP file for the selected layers
             map_config_txt = "var mapConfig = "
             map_config = {}
+            map_config["pageTitle"] = self.dlg.option_title_qt.text()
 
             # Hardwire projection for now
             map_config["displayProjection"] = "EPSG:3857"

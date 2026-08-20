@@ -10,6 +10,19 @@ const displayProjection = mapConfig.displayProjection;
 const initialMapExtent = mapConfig.initialMapExtent;
 document.title = mapConfig.pageTitle;
 
+// Check if we need to add Proj4s definition for requested display projection
+if (!ol.proj.get(mapConfig.displayProjection)) {
+    const proj4String = mapConfig.proj4String;
+    if (typeof proj4 === "undefined") {
+        console.error("Cannot add the missing requested display projection [" +
+        displayProjection + "] because the Proj4js library has not been loaded");
+    }
+    //console.log("INFO: adding missing requested display projection [" +
+    //    displayProjection + "] with Proj4s string:\n" + proj4String);
+    proj4.defs(displayProjection, proj4String);
+    ol.proj.proj4.register(proj4);
+}
+
 // Create map with various controls and an example OpenStreetMap baselayer
 const map = new ol.Map({
     target: 'map',

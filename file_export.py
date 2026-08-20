@@ -21,11 +21,13 @@ import os
 import re
 from pathlib import Path
 from osgeo import ogr
+from pyproj import CRS
 
 from qgis.PyQt.QtWidgets import QCheckBox, QLabel, QComboBox, QFileDialog
 from qgis.core import (
     QgsCoordinateTransform,
     QgsCoordinateTransformContext,
+    QgsCoordinateReferenceSystem,
     QgsProject,
     QgsRectangle,
     QgsSldExportContext,
@@ -58,10 +60,10 @@ class FileExport:
         # Warn if GeoParquet is not supported by the GDAL/OGR installation
         if not self.is_geoparquet_wr_supported():
             self.dlg.log_message(
-                "Warning: GeoParquet format is not supported by this GDAL/OGR installation.")
+                "WARNING: GeoParquet format is not supported by this GDAL/OGR installation.")
             if not self.is_geoparquet_io_supported():
                 self.dlg.log_message(
-                    "Warning: geoparquet-io library is not available either.\n"
+                    "WARNING: geoparquet-io library is not available either.\n"
                     "Exporting to GeoParquet will not be possible.\n")
             else:
                 self.dlg.log_message(
@@ -100,7 +102,7 @@ class FileExport:
         if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
                 any(layer_info["out_format"] == "GeoParquet" for layer_info in selected_layers)):
             self.dlg.log_message(
-                "GeoParquet export is not supported by the current QGIS installation.\n"
+                "ERROR: GeoParquet export is not supported by the current QGIS installation.\n"
                 "Please install the 'Parquet' GDAL driver to enable GeoParquet export."
             )
 
@@ -129,13 +131,13 @@ class FileExport:
         try:
             Path(output_data_dir).mkdir(exist_ok=True)
         except Exception as e:
-            self.dlg.log_message(f'Export aborted: Error creating "{DATA_DIR_NAME}" directory: {e}')
+            self.dlg.log_message(f'ERROR: (Export aborted): Error creating "{DATA_DIR_NAME}" directory: {e}')
             return
         output_styles_dir = os.path.join(output_dir, STYLES_DIR_NAME)
         try:
             Path(output_styles_dir).mkdir(exist_ok=True)
         except Exception as e:
-            self.dlg.log_message(f'Export aborted: Error creating "{STYLES_DIR_NAME}" directory: {e}')
+            self.dlg.log_message(f'ERROR: (Export aborted): Error creating "{STYLES_DIR_NAME}" directory: {e}')
             return
 
         # Export SLD files for selected layers if requested
@@ -192,7 +194,7 @@ class FileExport:
                 )
                 if return_code != QgsVectorFileWriter.NoError:
                     self.dlg.log_message(
-                        f"Error exporting FlatGeobuf layer '{layer_name}': {error_message}"
+                        f"ERROR: FlatGeobuf export failed of layer '{layer_name}': {error_message}"
                     )
             elif layer_format == "GeoJSON":
                 output_path = os.path.join(output_data_dir, f"{layer_name}.geojson")
@@ -204,7 +206,7 @@ class FileExport:
                 )
                 if return_code != QgsVectorFileWriter.NoError:
                     self.dlg.log_message(
-                        f"Error exporting GeoJSON layer '{layer_name}': {error_message}"
+                        f"ERROR: GeoJSON export failed of layer '{layer_name}': {error_message}"
                     )
             elif layer_format == "PMTile":
                 # Any error reporting within export_single_pmtiles()
@@ -221,7 +223,7 @@ class FileExport:
                     )
                     if return_code != QgsVectorFileWriter.NoError:
                         self.dlg.log_message(
-                            f"Error exporting GeoParquet layer '{layer_name}': {error_message}"
+                            f"ERROR: GeoParquet export failed of layer '{layer_name}': {error_message}"
                         )
                 elif self.is_geoparquet_io_supported():
                     # TBD: Implement geoparquet-io export
@@ -247,9 +249,18 @@ class FileExport:
             map_config_txt = "var mapConfig = "
             map_config = {}
             map_config["pageTitle"] = ui_options["web_map_title"]
+            target_crs = ui_options["target_crs"]
+            map_config["displayProjection"] = target_crs
 
-            # Hardwire projection for now
-            map_config["displayProjection"] = "EPSG:3857"
+            # Generate Proj4 string for display projections not natively available in OpenLayers
+            if target_crs not in ["EPSG:4326", "EPSG:3857"]:
+                self.dlg.log_message(
+                    f"WARNING: Output Display Projection is not EPSG:4326 or EPSG:3857 - "
+                    f"web map will need to load Proj4js library to display projection."
+                )
+                crs = CRS(target_crs)
+                proj4_string = crs.to_proj4()
+                map_config["proj4String"] = proj4_string
 
             # Add details of selected layers and compute their maximum extent
             data_layers_config = []
@@ -264,15 +275,15 @@ class FileExport:
                 })
                 layer = layer_info["item"]
                 if layer.extent():
-                    # Convert extent to EPSG:3857 if needed (hardwired for now)
-                    if layer.crs().authid() != "EPSG:3857":
+                    # Convert extent projection if needed
+                    if layer.crs().authid() != target_crs:
                         transform = QgsCoordinateTransform(
                             layer.crs(),
-                            QgsProject.instance().crs(),
-                            transform_context,
+                            QgsCoordinateReferenceSystem(target_crs),
+                            QgsProject.instance(),
                         )
-                        layer_extent_3857 = transform.transform(layer.extent())
-                        max_extent.combineExtentWith(layer_extent_3857)
+                        layer_extent_transformed = transform.transform(layer.extent())
+                        max_extent.combineExtentWith(layer_extent_transformed)
                     else:
                         max_extent.combineExtentWith(layer.extent())
 

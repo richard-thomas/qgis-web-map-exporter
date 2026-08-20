@@ -104,6 +104,11 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
         target_epsg = self.options_target_crs_qt.text()
         if target_epsg == "":
             target_epsg = "3857"
+        # TBD: Do EPSG validation within Qt update handlers, so user gets
+        # immediate feedback if they enter a non-numeric EPSG code.
+        if not target_epsg.isdigit():
+            self.log_message("ERROR: Invalid Output Display Projection EPSG code. Please enter a valid numeric EPSG code.")
+            return
         ui_options = {
             "export_src_data": self.options_checkbox_src_data_qt.isChecked(),
             "pmtiles_max_zoom": self.options_pmtiles_max_zoom_qt.value(),

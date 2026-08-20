@@ -81,7 +81,7 @@ class PMTilesExport:
         success = self._convert_to_pmtiles(gpkg_path, pmtiles_path, ui_options)
 
         if not success:
-            self.dlg.log_message(f"Failed to convert {sanitized_layer_name}")
+            self.dlg.log_message(f"ERROR: Failed to convert {sanitized_layer_name}")
             return None
 
         # Clean up intermediate GeoPackage
@@ -101,7 +101,7 @@ class PMTilesExport:
 
         for i, layer in enumerate(layers):
             layer_name = self._sanitize_layer_name(layer.name())
-            self.dlg.log_message(f"  Exporting: {layer.name()} -> {layer_name}")
+            #self.dlg.log_message(f"  Exporting: {layer.name()} -> {layer_name}")
 
             options = QgsVectorFileWriter.SaveVectorOptions()
             options.driverName = "GPKG"
@@ -142,7 +142,7 @@ class PMTilesExport:
                 options
             )
             if error != QgsVectorFileWriter.WriterError.NoError:
-                self.dlg.log_message(f"  Warning: {error_message}")
+                self.dlg.log_message(f"  ERROR: {error_message}")
 
     def _convert_to_pmtiles(self, gpkg_path, pmtiles_path, ui_options):
         """Convert GeoPackage to PMTiles using ogr2ogr (blocking version for thread).
@@ -154,39 +154,31 @@ class PMTilesExport:
         """
         from qgis.PyQt.QtCore import QCoreApplication
 
-        # Check GDAL version first
-        gdal_version = self._check_gdal_version()
-        if gdal_version:
-            self.dlg.log_message(f"  GDAL version: {gdal_version}")
-
         # Check if PMTiles driver is available
         if not self._check_pmtiles_driver():
             self.dlg.log_message(
-                "PMTiles driver not available. GDAL 3.8+ required."
+                "ERROR: PMTiles driver not available. GDAL 3.8+ required."
             )
+            gdal_version = self._check_gdal_version()
+            if gdal_version:
+                self.dlg.log_message(f"  GDAL version: {gdal_version}")
+
             return False
 
-        # Show input file size
-        gpkg_size_mb = os.path.getsize(gpkg_path) / (1024 * 1024)
-        self.dlg.log_message(f"  GeoPackage size: {gpkg_size_mb:.1f} MB",)
-
-       # List layers in GeoPackage
-        layers_in_gpkg = self._list_gpkg_layers(gpkg_path)
-        if layers_in_gpkg:
-            self.dlg.log_message(f"  Layers to convert: {', '.join(layers_in_gpkg)}",)
-        else:
-            self.dlg.log_message("  Warning: Could not list layers in GeoPackage",)
+        # List layers in GeoPackage
+        #layers_in_gpkg = self._list_gpkg_layers(gpkg_path)
+        #if layers_in_gpkg:
+        #    self.dlg.log_message(f"  Layers to convert: {', '.join(layers_in_gpkg)}",)
+        #else:
+        #    self.dlg.log_message("  Warning: Could not list layers in GeoPackage",)
 
         # Normalize paths for Windows
         gpkg_path = os.path.normpath(gpkg_path)
         pmtiles_path = os.path.normpath(pmtiles_path)
-        output_dir = os.path.dirname(pmtiles_path)
 
         # Build ogr2ogr command
         max_zoom = ui_options["pmtiles_max_zoom"]
 
-        self.dlg.log_message(f"  Max zoom: {max_zoom}",)
-        self.dlg.log_message(f"  Output: {pmtiles_path}",)
         self.dlg.log_message("  Starting ogr2ogr to convert GPKG to PMTile...",)
 
         # The GeoPackage is always written in EPSG:3857 by _export_to_geopackage
@@ -222,7 +214,7 @@ class PMTilesExport:
                 self.dlg.log_message(f"  ogr2ogr error: {error_msg}",)
                 return False
         except Exception as e:  # nosec B110
-            self.dlg.log_message(f"  Exception while running ogr2ogr: {str(e)}",)
+            self.dlg.log_message(f"  ERROR: Exception while running ogr2ogr: {str(e)}",)
             return False
 
         # Show output file size

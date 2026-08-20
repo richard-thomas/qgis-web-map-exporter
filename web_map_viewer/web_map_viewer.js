@@ -58,7 +58,11 @@ const dataLayersConfig = mapConfig.dataLayersConfig;
 let dataLayerList = [];
 for (const layer of dataLayersConfig) {
     let vectorLayer;
-    const dataUrl = layer['data_url']
+    const dataUrl = layer.data_url
+    if (dataUrl === '') {
+        console.warn(`Skipping layer "${layer.label}" - no source data available!`);
+        continue;
+    }
 
     // FlatGeoBuf data source
     if (dataUrl.endsWith('.fgb')) {
@@ -85,17 +89,21 @@ for (const layer of dataLayersConfig) {
 
     // (Currently) unsupported data source
     } else {
-        console.warn(`Layer "${layer['label']}": Discarding unsupported type "${dataUrl}"`);
+        console.warn(`Layer "${layer.label}": Discarding unsupported type "${dataUrl}"`);
         continue
     }
 
-    vectorLayer.set('title', layer['label']);
-    vectorLayer.set('zIndex', layer['z_index']);
+    vectorLayer.set('title', layer.label);
+    vectorLayer.set('zIndex', layer.z_index);
     dataLayerList.unshift(vectorLayer);
 
     // Apply vector layer styling from associated SLD file
-    const sldUrl = layer['style'];
-    loadSldStyle(sldUrl, vectorLayer);
+    const sldUrl = layer.style;
+    if (sldUrl !== '') {
+        loadSldStyle(sldUrl, vectorLayer);
+    } else {
+        console.warn(`No SLD styling available for layer "${layer.label}"`)
+    }
 }
 
 map.getLayers().extend(dataLayerList);

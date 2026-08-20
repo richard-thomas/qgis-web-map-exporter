@@ -126,38 +126,43 @@ class FileExport:
             return
         self.last_output_dir = output_dir
 
-        # Create output directories for data and SLD styles
+        # Export SLD files for selected layers
+        export_slds = ui_options["export_slds"]
+        if export_slds:
+            self._export_slds(output_dir, selected_layers)
+
+        # Export data for selected layers in requested formats
+        if ui_options["export_src_data"]:
+            self._export_src_data(output_dir, selected_layers, ui_options)
+
+        # Write out web map configuration JSONP file
+        if ui_options["export_map_config"]:
+            self._export_map_config(output_dir, selected_layers, ui_options)
+
+        # Put green message in main QGIS window message bar
+        self.iface.messageBar().pushMessage(
+            "Success",
+            f"Web Map Export completed to folder: {output_dir}.",
+            level=Qgis.Success)
+        self.dlg.log_message("Web Map Export complete!")
+
+    def _export_src_data(self, output_dir, selected_layers, ui_options):
+        """Export selected layer source data in the requested formats.
+
+        :param output_dir: folder to write data files to
+        :param selected_layers: list of selected layers with their export info
+        :param ui_options: settings from plugin options tab
+        """
+        # Create output directory for layer source data
         output_data_dir = os.path.join(output_dir, DATA_DIR_NAME)
         try:
             Path(output_data_dir).mkdir(exist_ok=True)
         except Exception as e:
             self.dlg.log_message(f'ERROR: (Export aborted): Error creating "{DATA_DIR_NAME}" directory: {e}')
             return
-        output_styles_dir = os.path.join(output_dir, STYLES_DIR_NAME)
-        try:
-            Path(output_styles_dir).mkdir(exist_ok=True)
-        except Exception as e:
-            self.dlg.log_message(f'ERROR: (Export aborted): Error creating "{STYLES_DIR_NAME}" directory: {e}')
-            return
-
-        # Export SLD files for selected layers if requested
-        export_slds = ui_options["export_slds"]
-        if export_slds:
-            self.dlg.log_message(
-                f"Exporting SLD files for selected layers to: {output_styles_dir}"
-            )
-            for layer_info in selected_layers:
-                if layer_info["item"] is None:
-                    continue
-                sld_text = self.get_layer_sld(layer_info["item"])
-                if sld_text is None:
-                    continue
-                sld_filename = f"{layer_info["name"]}.sld"
-                modified_sld_text = self._sld_qgis_tweak(sld_text, layer_info)
-                layer_info["style"] = f"{STYLES_DIR_NAME}/{sld_filename}"
-                sld_output_path = os.path.join(output_styles_dir, sld_filename)
-                with open(sld_output_path, "w", encoding="utf-8") as handle:
-                    handle.write(modified_sld_text)
+        self.dlg.log_message(
+            f"--> Exporting source data for selected layers to:\n  {output_data_dir}"
+        )
 
         # Set up data formats options
         transform_context = QgsCoordinateTransformContext()
@@ -188,7 +193,11 @@ class FileExport:
                 self.dlg.log_message(
                     f"Exporting FlatGeobuf layer: {layer_name}"
                 )
-                self.dlg.log_message(f"- Layer source: {layer.source()}")
+
+                # TBD: avoid exporting data if already done for another layer
+                # (e.g. multiple layers with the same source data, but different styling)
+                #self.dlg.log_message(f"- Layer source: {layer.source()}")
+
                 return_code, error_message, written_filename, _ = QgsVectorFileWriter.writeAsVectorFormatV3(
                     layer, output_path, transform_context, fgb_options
                 )
@@ -239,74 +248,100 @@ class FileExport:
                 continue
             data_url = f"{DATA_DIR_NAME}/{Path(written_filename).name}"
             layer_info["data_url"] = data_url
-            self.dlg.log_message(f"- Layer source URL: {data_url}")
 
-        # Write map config file
-        if ui_options["export_map_config"]:
-            self.dlg.log_message(f"Exporting map config file to: {output_dir}")
+    def _export_slds(self, output_dir, selected_layers):
+        """Export SLD files for selected layers.
 
-            # Write a web map configuration JSONP file for the selected layers
-            map_config_txt = "var mapConfig = "
-            map_config = {}
-            map_config["pageTitle"] = ui_options["web_map_title"]
-            target_crs = ui_options["target_crs"]
-            map_config["displayProjection"] = target_crs
+        :param output_dir: folder to write SLD files to
+        :param selected_layers: list of selected layers with their export info
+        """
+        # Create output directory for layer SLD styles
+        output_styles_dir = os.path.join(output_dir, STYLES_DIR_NAME)
+        self.dlg.log_message(f"--> Exporting SLD files for selected layers to:\n  {output_styles_dir}")
 
-            # Generate Proj4 string for display projections not natively available in OpenLayers
-            if target_crs not in ["EPSG:4326", "EPSG:3857"]:
-                self.dlg.log_message(
-                    f"WARNING: Output Display Projection is not EPSG:4326 or EPSG:3857 - "
-                    f"web map will need to load Proj4js library to display projection."
-                )
-                crs = CRS(target_crs)
-                proj4_string = crs.to_proj4()
-                map_config["proj4String"] = proj4_string
+        try:
+            Path(output_styles_dir).mkdir(exist_ok=True)
+        except Exception as e:
+            self.dlg.log_message(f'ERROR: (Export aborted): Error creating "{STYLES_DIR_NAME}" directory: {e}')
+            return
 
-            # Add details of selected layers and compute their maximum extent
-            data_layers_config = []
-            max_extent = QgsRectangle()
-            for layer_info in selected_layers:
-                layer_name = layer_info["name"]
-                data_layers_config.append({
-                    "data_url": layer_info["data_url"],
-                    "label": layer_info["name"],
-                    "style": layer_info["style"] if export_slds else "",
-                    "z_index": layer_info["z_index"]
-                })
-                layer = layer_info["item"]
-                if layer.extent():
-                    # Convert extent projection if needed
-                    if layer.crs().authid() != target_crs:
-                        transform = QgsCoordinateTransform(
-                            layer.crs(),
-                            QgsCoordinateReferenceSystem(target_crs),
-                            QgsProject.instance(),
-                        )
-                        layer_extent_transformed = transform.transform(layer.extent())
-                        max_extent.combineExtentWith(layer_extent_transformed)
-                    else:
-                        max_extent.combineExtentWith(layer.extent())
+        for layer_info in selected_layers:
+            if layer_info["item"] is None:
+                continue
+            sld_text = self.get_layer_sld(layer_info["item"])
+            if sld_text is None:
+                continue
+            sld_filename = f"{layer_info["name"]}.sld"
+            modified_sld_text = self._sld_qgis_tweak(sld_text, layer_info)
+            layer_info["style"] = f"{STYLES_DIR_NAME}/{sld_filename}"
+            sld_output_path = os.path.join(output_styles_dir, sld_filename)
+            with open(sld_output_path, "w", encoding="utf-8") as handle:
+                handle.write(modified_sld_text)
 
-            map_config["initialMapExtent"] = [
-                max_extent.xMinimum(),
-                max_extent.yMinimum(),
-                max_extent.xMaximum(),
-                max_extent.yMaximum(),
-            ]
-            map_config["dataLayersConfig"] = data_layers_config
+    def _export_map_config(self, output_dir, selected_layers, ui_options):
+        """Write a web map configuration file.
 
-            map_config_txt += json.dumps(map_config, indent=4)
-            map_config_txt += ";\n"
-            map_output_path = os.path.join(output_dir, "map_config.js")
-            with open(map_output_path, "w", encoding="utf-8") as handle:
-                handle.write(map_config_txt)
+        :param output_dir: folder to write map config file to
+        :param selected_layers: list of selected layers with their export info
+        :param ui_options: settings from plugin options tab
+        """
+        self.dlg.log_message(f"--> Exporting map config file to:\n  {output_dir}")
 
-        # Put green message in main QGIS window message bar
-        self.iface.messageBar().pushMessage(
-            "Success",
-            f"Web Map Export completed to folder: {output_dir}.",
-            level=Qgis.Success)
-        self.dlg.log_message("Export complete!\n")
+        # Write a web map configuration JSONP file for the selected layers
+        map_config_txt = "var mapConfig = "
+        map_config = {}
+        map_config["pageTitle"] = ui_options["web_map_title"]
+        target_crs = ui_options["target_crs"]
+        map_config["displayProjection"] = target_crs
+
+        # Generate Proj4 string for display projections not natively available in OpenLayers
+        if target_crs not in ["EPSG:4326", "EPSG:3857"]:
+            self.dlg.log_message(
+                f"WARNING: Output Display Projection is not EPSG:4326 or EPSG:3857 - "
+                f"web map will need to load Proj4js library to display projection."
+            )
+            crs = CRS(target_crs)
+            proj4_string = crs.to_proj4()
+            map_config["proj4String"] = proj4_string
+
+        # Add details of selected layers and compute their maximum extent
+        data_layers_config = []
+        max_extent = QgsRectangle()
+        for layer_info in selected_layers:
+            layer_name = layer_info["name"]
+            data_layers_config.append({
+                "data_url": layer_info["data_url"] if ui_options["export_src_data"] else "",
+                "label": layer_info["name"],
+                "style": layer_info["style"] if ui_options["export_slds"] else "",
+                "z_index": layer_info["z_index"]
+            })
+            layer = layer_info["item"]
+            if layer.extent():
+                # Convert extent projection if needed
+                if layer.crs().authid() != target_crs:
+                    transform = QgsCoordinateTransform(
+                        layer.crs(),
+                        QgsCoordinateReferenceSystem(target_crs),
+                        QgsProject.instance(),
+                    )
+                    layer_extent_transformed = transform.transform(layer.extent())
+                    max_extent.combineExtentWith(layer_extent_transformed)
+                else:
+                    max_extent.combineExtentWith(layer.extent())
+
+        map_config["initialMapExtent"] = [
+            max_extent.xMinimum(),
+            max_extent.yMinimum(),
+            max_extent.xMaximum(),
+            max_extent.yMaximum(),
+        ]
+        map_config["dataLayersConfig"] = data_layers_config
+
+        map_config_txt += json.dumps(map_config, indent=4)
+        map_config_txt += ";\n"
+        map_output_path = os.path.join(output_dir, "map_config.js")
+        with open(map_output_path, "w", encoding="utf-8") as handle:
+            handle.write(map_config_txt)
 
     def _collect_selected_layers(self, item, selected_layers):
         """Get information from selected layers (only) of UI dialog."""

@@ -70,7 +70,7 @@ class PMTilesExport:
         :returns: Filename of written PMTiles file or None if failed
         """
         sanitized_layer_name = self._sanitize_layer_name(layer.name())
-        self.dlg.log_message(f"Processing PMTiles layer: {layer.name()}...")
+        self.dlg.log_message(f"Exporting PMTiles layer: {layer.name()}...")
 
         # Export single layer to GeoPackage (clipped to export extent)
         gpkg_path = os.path.join(output_dir, f"{sanitized_layer_name}.gpkg")

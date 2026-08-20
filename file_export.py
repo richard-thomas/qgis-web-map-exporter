@@ -23,7 +23,7 @@ from pathlib import Path
 from osgeo import ogr
 from pyproj import CRS
 
-from qgis.PyQt.QtWidgets import QCheckBox, QLabel, QComboBox, QFileDialog
+from qgis.PyQt.QtWidgets import QFileDialog
 from qgis.core import (
     QgsCoordinateTransform,
     QgsCoordinateTransformContext,
@@ -64,39 +64,20 @@ class FileExport:
             if not self.is_geoparquet_io_supported():
                 self.dlg.log_message(
                     "WARNING: geoparquet-io library is not available either.\n"
-                    "Exporting to GeoParquet will not be possible.\n")
+                    "Exporting to GeoParquet will not be possible.")
             else:
                 self.dlg.log_message(
-                    "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.\n")
+                    "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.")
 
-    def export_selected_layers(self, ui_options):
+    def export_selected_layers(self, ui_options, selected_layers):
         """Prompt for an output folder and write requested export files.
 
         :param ui_options: settings from plugin options tab
+        :param selected_layers: layers selected in the plugin dialog
         """
-        # Switch tab to log tab so user can see progress messages
+        # Switch Plugin UI to "Output Log" tab so user can see progress messages
         self.dlg.tab_widget_qt.setCurrentWidget(self.dlg.tab_output_qt)
-        self.dlg.log_message(
-            "\nStarting Web Map Export...")
-
-        # Get selected layers and their requested export formats from UI
-        root = self.dlg.layers_tree_qt.invisibleRootItem()
-        selected_layers = []
-        for index in range(root.childCount()):
-            item = root.child(index)
-            self._collect_selected_layers(item, selected_layers)
-
-        # Get list of layers in order of rendering (bottom layer first)
-        # Define z_index (which gets passed on to web map config) such
-        # that by default rendering order is reversed, but user can
-        # tweak this manually in map config JSON if desired.
-        layers_in_order = QgsProject.instance().layerTreeRoot().layerOrder()
-        for layer_info in selected_layers:
-            layer = layer_info["item"]
-            if layer in layers_in_order:
-                layer_info["z_index"] = -layers_in_order.index(layer) - 1
-            else:
-                layer_info["z_index"] = 0  # Layer not found in rendering order!
+        self.dlg.log_message("\nStarting Web Map Export...")
 
         # If GeoParquet export is requested, stop export if not supported
         if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
@@ -268,7 +249,7 @@ class FileExport:
         for layer_info in selected_layers:
             if layer_info["item"] is None:
                 continue
-            sld_text = self.get_layer_sld(layer_info["item"])
+            sld_text = self._get_layer_sld(layer_info["item"])
             if sld_text is None:
                 continue
             sld_filename = f"{layer_info["name"]}.sld"
@@ -343,42 +324,7 @@ class FileExport:
         with open(map_output_path, "w", encoding="utf-8") as handle:
             handle.write(map_config_txt)
 
-    def _collect_selected_layers(self, item, selected_layers):
-        """Get information from selected layers (only) of UI dialog."""
-        if item.childCount() == 0:
-            widget = self.dlg.layers_tree_qt.itemWidget(item, 0)
-            if widget is None:
-                return
-
-            checkbox = widget.findChild(QCheckBox)
-            if checkbox is None or not checkbox.isChecked():
-                return
-
-            label_widget = widget.findChild(QLabel)
-            layer_name = label_widget.text()
-            format_combobox = widget.findChild(QComboBox)
-            layer_format = format_combobox.currentText()
-
-            layer_item = self.find_layer_by_name(layer_name)
-            selected_layers.append({
-                "name": layer_name,
-                "item": layer_item,
-                "out_format": layer_format
-            })
-            return
-
-        for child_index in range(item.childCount()):
-            child_item = item.child(child_index)
-            self._collect_selected_layers(child_item, selected_layers)
-
-    def find_layer_by_name(self, layer_name):
-        """Find a layer in the current project by its tree name."""
-        for layer in QgsProject.instance().mapLayers().values():
-            if layer.name() == layer_name:
-                return layer
-        return None
-
-    def get_layer_sld(self, layer):
+    def _get_layer_sld(self, layer):
         """Return SLD content for a layer if it is available."""
         if layer is None:
             return None

@@ -57,8 +57,28 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
         # Connect main dialog "Help" and "Export" buttons
         self.file_export = FileExport(self, plugin)
         self.button_reload_qt.clicked.connect(self.load_project_layers)
-        self.button_export_qt.clicked.connect(self.file_export.export_selected_layers)
+        self.button_export_qt.clicked.connect(self.do_export)
         self.button_box_main_qt.helpRequested.connect(self._open_help_page)
+
+    def do_export(self):
+        """Export the layers selected in the dialog."""
+        # If no 'Output Display Projection' is entered, default to Web Mercator
+        target_epsg = self.options_target_crs_qt.text()
+        if target_epsg == "":
+            target_epsg = "3857"
+        ui_options = {
+            "export_src_data": self.options_checkbox_src_data_qt.isChecked(),
+            "pmtiles_max_zoom": self.options_pmtiles_max_zoom_qt.value(),
+            "merge_pmtiles": self.options_checkbox_merge_pmtiles_qt.isChecked(),
+            "force_geoparquet_io": self.options_checkbox_gpq_io_qt.isChecked(),
+            "export_slds": self.options_checkbox_slds_qt.isChecked(),
+            "merge_slds": self.options_merge_slds_qt.isChecked(),
+            "export_map_config": self.options_checkbox_map_qt.isChecked(),
+            "web_map_title": self.options_title_qt.text(),
+            "target_crs": "EPSG:" + target_epsg,
+        }
+        self.log_message(str(ui_options))
+        self.file_export.export_selected_layers(ui_options)
 
     def log_message(self, message):
         """Write message to 'Output Log' tab in dialog window."""
@@ -77,7 +97,7 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
 
         # Set "Web Map Title" field from QGIS project title
         project_title = QgsProject.instance().title()
-        self.option_title_qt.setText(project_title)
+        self.options_title_qt.setText(project_title)
 
     def _open_help_page(self):
         """Open documentation page in the system's default browser"""

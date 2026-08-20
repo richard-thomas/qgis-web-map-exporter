@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>692</width>
-    <height>446</height>
+    <height>465</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tab_widget_qt">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_layers_qt">
       <attribute name="title">
@@ -81,7 +81,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QSpinBox" name="pmtiles_max_zoom_qt">
+                <widget class="QSpinBox" name="options_pmtiles_max_zoom_qt">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -115,7 +115,7 @@
               </layout>
              </item>
              <item>
-              <widget class="QCheckBox" name="options_checkbox_pmtiles_qt">
+              <widget class="QCheckBox" name="options_checkbox_merge_pmtiles_qt">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -200,7 +200,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="option_title_qt"/>
+            <widget class="QLineEdit" name="options_title_qt"/>
            </item>
           </layout>
          </item>

@@ -61,8 +61,14 @@ class PMTilesExport:
         # TBD: make configurable as using OpenLayers
         self.target_crs = QgsCoordinateReferenceSystem("EPSG:3857")
 
-    def export_single_pmtiles(self, layer, output_dir):
-        """Export single vector layer to a PMTiles file."""
+    def export_single_pmtiles(self, layer, output_dir, ui_options):
+        """Export single vector layer to a PMTiles file.
+
+        :param layer: QgsVectorLayer to export
+        :param output_dir: Output directory for PMTiles file
+        :param ui_options: settings from plugin options tab
+        :returns: Filename of written PMTiles file or None if failed
+        """
         sanitized_layer_name = self._sanitize_layer_name(layer.name())
         self.dlg.log_message(f"Processing PMTiles layer: {layer.name()}...")
 
@@ -72,7 +78,7 @@ class PMTilesExport:
 
         # Convert to PMTiles
         pmtiles_path = os.path.join(output_dir, f"{sanitized_layer_name}.pmtiles")
-        success = self._convert_to_pmtiles(gpkg_path, pmtiles_path)
+        success = self._convert_to_pmtiles(gpkg_path, pmtiles_path, ui_options)
 
         if not success:
             self.dlg.log_message(f"Failed to convert {sanitized_layer_name}")
@@ -138,11 +144,12 @@ class PMTilesExport:
             if error != QgsVectorFileWriter.WriterError.NoError:
                 self.dlg.log_message(f"  Warning: {error_message}")
 
-    def _convert_to_pmtiles(self, gpkg_path, pmtiles_path):
+    def _convert_to_pmtiles(self, gpkg_path, pmtiles_path, ui_options):
         """Convert GeoPackage to PMTiles using ogr2ogr (blocking version for thread).
 
         :param gpkg_path: Input GeoPackage path
         :param pmtiles_path: Output PMTiles path
+        :param ui_options: settings from plugin options tab
         :returns: True if successful
         """
         from qgis.PyQt.QtCore import QCoreApplication
@@ -176,7 +183,7 @@ class PMTilesExport:
         output_dir = os.path.dirname(pmtiles_path)
 
         # Build ogr2ogr command
-        max_zoom = self.dlg.pmtiles_max_zoom_qt.value()
+        max_zoom = ui_options["pmtiles_max_zoom"]
 
         self.dlg.log_message(f"  Max zoom: {max_zoom}",)
         self.dlg.log_message(f"  Output: {pmtiles_path}",)

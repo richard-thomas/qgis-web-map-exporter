@@ -67,8 +67,11 @@ class FileExport:
                 self.dlg.log_message(
                     "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.\n")
 
-    def export_selected_layers(self):
-        """Prompt for an output folder and write requested export files."""
+    def export_selected_layers(self, ui_options):
+        """Prompt for an output folder and write requested export files.
+
+        :param ui_options: settings from plugin options tab
+        """
         # Switch tab to log tab so user can see progress messages
         self.dlg.tab_widget_qt.setCurrentWidget(self.dlg.tab_output_qt)
         self.dlg.log_message(
@@ -135,9 +138,9 @@ class FileExport:
             self.dlg.log_message(f'Export aborted: Error creating "{STYLES_DIR_NAME}" directory: {e}')
             return
 
-        # Write SLD files for selected layers if requested
-        write_slds = self.dlg.options_checkbox_slds_qt.isChecked()
-        if write_slds:
+        # Export SLD files for selected layers if requested
+        export_slds = ui_options["export_slds"]
+        if export_slds:
             self.dlg.log_message(
                 f"Exporting SLD files for selected layers to: {output_styles_dir}"
             )
@@ -205,7 +208,8 @@ class FileExport:
                     )
             elif layer_format == "PMTile":
                 # Any error reporting within export_single_pmtiles()
-                written_filename = self.pmtiles_exporter.export_single_pmtiles(layer, output_data_dir)
+                written_filename = self.pmtiles_exporter.export_single_pmtiles(
+                    layer, output_data_dir, ui_options)
             elif layer_format == "GeoParquet":
                 if self.is_geoparquet_wr_supported():
                     output_path = os.path.join(output_data_dir, f"{layer_name}.parquet")
@@ -236,14 +240,13 @@ class FileExport:
             self.dlg.log_message(f"- Layer source URL: {data_url}")
 
         # Write map config file
-        write_map = self.dlg.options_checkbox_map_qt.isChecked()
-        if write_map:
+        if ui_options["export_map_config"]:
             self.dlg.log_message(f"Exporting map config file to: {output_dir}")
 
             # Write a web map configuration JSONP file for the selected layers
             map_config_txt = "var mapConfig = "
             map_config = {}
-            map_config["pageTitle"] = self.dlg.option_title_qt.text()
+            map_config["pageTitle"] = ui_options["web_map_title"]
 
             # Hardwire projection for now
             map_config["displayProjection"] = "EPSG:3857"
@@ -256,7 +259,7 @@ class FileExport:
                 data_layers_config.append({
                     "data_url": layer_info["data_url"],
                     "label": layer_info["name"],
-                    "style": layer_info["style"] if write_slds else "",
+                    "style": layer_info["style"] if export_slds else "",
                     "z_index": layer_info["z_index"]
                 })
                 layer = layer_info["item"]

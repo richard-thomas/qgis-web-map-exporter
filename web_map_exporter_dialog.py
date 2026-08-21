@@ -195,7 +195,6 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
                 row_layout.setContentsMargins(0, 0, 5, 0)
                 row_layout.setSpacing(4)
                 lyr_check_box = QCheckBox()
-                lyr_check_box.setChecked(node.itemVisibilityChecked())
                 lyr_label = QLabel(node.name())
                 lyr_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
                 lyr_combo_box = QComboBox()
@@ -207,6 +206,7 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
                     #self.log_message(f'Adding Vector Layer: {node.name()}')
                     lyr_combo_box.addItems(['FlatGeoBuf', 'PMTiles', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
+                    lyr_check_box.setChecked(node.itemVisibilityChecked())
                 else:
                     #self.log_message(
                     #    f'Adding Non-Vector Layer (Placeholder only): {node.name()}')

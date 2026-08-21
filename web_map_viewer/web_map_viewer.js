@@ -90,6 +90,14 @@ for (const layer of dataLayersConfig) {
             })
         });
 
+    // GeoParquet data source
+    } else if (dataUrl.endsWith('.parquet')) {
+        // No native GeoParquet support in OpenLayers. As it is a columnar format,
+        // ideally would want to only get geometry and any attributes required
+        // for styling, with any selection popups fetching additional attributes on the fly.
+        console.warn(`Discarding layer "${layer.label}": GeoParquet format currently unsupported`);
+        continue
+
     // (Currently) unsupported data source
     } else {
         console.warn(`Layer "${layer.label}": Discarding unsupported type "${dataUrl}"`);

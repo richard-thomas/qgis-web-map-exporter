@@ -5,16 +5,17 @@ WebMapExporter - A QGIS plugin
 Export data (in cloud-native formats) and QGIS styling to build a standalone web map
 
 This file is largely copied/adapted from sections of exporter.py in
-John Zastrow's MapSplat plugin:
+John Zastrow's MapSplat plugin (GPL-2.0 license):
 https://github.com/johnzastrow/mapsplat4/blob/main/exporter.py
 
-    copyright            : (C) 2026 by Richard Thomas
+    Copyright            : (C) 2026 Richard Thomas
+    Email                : mrcobristol-qgis@yahoo.com
     git sha              : $Format:%H$
 
  ***************************************************************************
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
+ *   the Free Software Foundation; either version 3 of the License, or     *
  *   (at your option) any later version.                                   *
  ***************************************************************************
 Export QGIS layers to PMTiles format (copied/adapted from MapSplat plugin).

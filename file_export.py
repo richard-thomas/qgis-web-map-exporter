@@ -4,13 +4,14 @@
 WebMapExporter - A QGIS plugin
 Export data (in cloud-native formats) and QGIS styling to build a standalone web map
 
-    copyright            : (C) 2026 by Richard Thomas
+    Copyright            : (C) 2026 Richard Thomas
+    Email                : mrcobristol-qgis@yahoo.com
     git sha              : $Format:%H$
 
  ***************************************************************************
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
+ *   the Free Software Foundation; either version 3 of the License, or     *
  *   (at your option) any later version.                                   *
  ***************************************************************************
 Export QGIS layer data, styling and web map configuration to files in a selected folder.

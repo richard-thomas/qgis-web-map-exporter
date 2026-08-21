@@ -126,7 +126,23 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>Merge all PMTile layers into a single file</string>
+                <string>Merge all PMTiles layers into a single file</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="options_checkbox_compliant_geojson_qt">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Make GeoJSON RFC7946 compliant (force EPSG:4326 &amp; 7d.p.)</string>
                </property>
               </widget>
              </item>
@@ -223,6 +239,13 @@
              </property>
              <property name="placeholderText">
               <string>3857</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>(Only 3857 possible for PMTiles)</string>
              </property>
             </widget>
            </item>

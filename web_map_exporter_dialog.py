@@ -115,6 +115,7 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
             "export_src_data": self.options_checkbox_src_data_qt.isChecked(),
             "pmtiles_max_zoom": self.options_pmtiles_max_zoom_qt.value(),
             "merge_pmtiles": self.options_checkbox_merge_pmtiles_qt.isChecked(),
+            "compliant_geojson": self.options_checkbox_compliant_geojson_qt.isChecked(),
             "force_geoparquet_io": self.options_checkbox_gpq_io_qt.isChecked(),
             "export_slds": self.options_checkbox_slds_qt.isChecked(),
             "merge_slds": self.options_merge_slds_qt.isChecked(),
@@ -204,7 +205,7 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
 
                 if node.layer().type() == QgsMapLayer.LayerType.Vector:
                     #self.log_message(f'Adding Vector Layer: {node.name()}')
-                    lyr_combo_box.addItems(['FlatGeoBuf', 'PMTile', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
+                    lyr_combo_box.addItems(['FlatGeoBuf', 'PMTiles', 'GeoJSON', 'GeoParquet', '(Placeholder)'])
                 else:
                     #self.log_message(
                     #    f'Adding Non-Vector Layer (Placeholder only): {node.name()}')

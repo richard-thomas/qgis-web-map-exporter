@@ -77,7 +77,7 @@ for (const layer of dataLayersConfig) {
         vectorLayer = new ol.layer.VectorTile({
             source: new olpmtiles.PMTilesVectorSource({
                 url: dataUrl,
-                projection: displayProjection
+                //projection: displayProjection
             }),
         });
 

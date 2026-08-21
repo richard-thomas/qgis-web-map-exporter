@@ -59,14 +59,16 @@ class FileExport:
         # Warn if GeoParquet is not supported by the GDAL/OGR installation
         if not self.is_geoparquet_wr_supported():
             self.dlg.log_message(
-                "WARNING: GeoParquet format is not supported by this GDAL/OGR installation.")
-            if not self.is_geoparquet_io_supported():
+                "WARNING: GeoParquet format is not supported by this GDAL/OGR installation. "
+                "Exporting to GeoParquet will not be possible.")
+            if self.is_geoparquet_io_supported():
                 self.dlg.log_message(
-                    "WARNING: geoparquet-io library is not available either.\n"
-                    "Exporting to GeoParquet will not be possible.")
+                    "INFO: geoparquet-io library is available, "
+                    "so exporting to GeoParquet may be possible later (TBD).")
             else:
                 self.dlg.log_message(
-                    "However, geoparquet-io library is available, so exporting to GeoParquet will be possible.")
+                    "INFO: geoparquet-io library is not available either, "
+                    "though this might make GeoParquet exports possible later (TBD).")
 
     def export_selected_layers(self, ui_options, selected_layers):
         """Prompt for an output folder and write requested export files.
@@ -77,20 +79,35 @@ class FileExport:
         # Switch Plugin UI to "Output Log" tab so user can see progress messages
         self.dlg.tab_widget_qt.setCurrentWidget(self.dlg.tab_output_qt)
 
-        # If GeoParquet export is requested, stop export if not supported
-        if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
-                any(layer_info["out_format"] == "GeoParquet" for layer_info in selected_layers)):
-            self.dlg.log_message(
-                "ERROR: GeoParquet export is not supported by the current QGIS installation.\n"
-                "Please install the 'Parquet' GDAL driver to enable GeoParquet export."
-            )
+        # Abort export on invalid settings and flag with red error message in QGIS window message bar
+        if ui_options["export_src_data"]:
+            abort_export = False
+            # If PMTiles export requested, stop if DisplayProjection not EPSG:3857
+            if (ui_options["target_crs"] != "3857" and
+                    any(layer_info["out_format"] == "PMTiles" for layer_info in selected_layers)):
+                self.dlg.log_message(
+                    "ERROR: PMTiles export only possible with EPSG:3857 output display projection."
+                )
+                self.iface.messageBar().pushMessage(
+                    "Error",
+                    "Web Map Export aborted. PMTiles export is only possible with EPSG:3857 output display projection.",
+                    level=Qgis.Critical)
+                abort_export = True
 
-            # Put red message in main QGIS window message bar
-            self.iface.messageBar().pushMessage(
-                "Error",
-                "Export aborted: GeoParquet export is not supported by the current QGIS installation.",
-                level=Qgis.Critical)
-            return
+            # If GeoParquet export is requested, stop export if not supported
+            if (not self.is_geoparquet_wr_supported() and #not self.is_geoparquet_io_supported() and
+                    any(layer_info["out_format"] == "GeoParquet" for layer_info in selected_layers)):
+                self.dlg.log_message(
+                    "ERROR: GeoParquet export is not supported by the current QGIS installation.\n"
+                    "Please install the 'Parquet' GDAL driver to enable GeoParquet export."
+                )
+                self.iface.messageBar().pushMessage(
+                    "Error",
+                    "Web Map Export aborted. GeoParquet export is not supported by the current QGIS installation.",
+                    level=Qgis.Critical)
+                abort_export = True
+            if abort_export:
+                return
 
         # Get Output folder to write files from user
         if self.last_output_dir is None:
@@ -205,7 +222,7 @@ class FileExport:
                     self.dlg.log_message(
                         f"ERROR: GeoJSON export failed of layer '{layer_name}': {error_message}"
                     )
-            elif layer_format == "PMTile":
+            elif layer_format == "PMTiles":
                 # Any error reporting within export_single_pmtiles()
                 written_filename = self.pmtiles_exporter.export_single_pmtiles(
                     layer, output_data_dir, ui_options)

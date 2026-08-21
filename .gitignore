@@ -1,5 +1,6 @@
 .vscode/
 .qgis-settings/
+uv.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

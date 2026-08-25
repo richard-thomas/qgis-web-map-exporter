@@ -2,7 +2,7 @@
 
 _(Note: please come back in a week or so - initial site is still in development!)_
 
-A "Proof of Concept" QGIS 4.x Python Plugin to export standalone interactive web maps with faithful QGIS styling, exporting data in cloud-native formats
+A "Proof of Concept" QGIS 4.x Python Plugin to generate standalone interactive web maps with faithful QGIS styling, exporting data in cloud-native formats
 
 ![QGIS vs web browser styling](images/QGIS%20+%20Firefox%20D+S%20Canal%20screengrab.png)
     _Example web map browser rendering (inset) vs original QGIS Project_
@@ -31,13 +31,13 @@ Key features include:
 - Web Map rendering with OpenLayers of all exported data formats (except GeoParquet)
 - Web Map styling using the [SLDReader](https://github.com/NieuwlandGeo/SLDReader/blob/master/README.md) library
 
-
+## Examples
 
 The status of the **styling** is easiest to get an idea of by looking at examples of 2 QGIS projects I had to hand and their resultant exported web maps:
-- (MRCO Site Map - Link TBD): detailed layout of a community orchard including a wide variety of polygon fill styles and zoom-level labelling changes
-- (Dorset & Somerset Canal - Link TBD): evidences for a former canal route with lots of overlapping features with complex rule-based styling by feature type and zoom level
+- [Orchard Site Map](TBD-insert-link-to-page): detailed layout of a community orchard including a wide variety of polygon fill styles and zoom-level labelling changes
+- [Dorset & Somerset Canal](TBD-insert-link-to-page): evidences for a former canal route with lots of overlapping features with complex rule-based styling by feature type and zoom level
 
-To test the handling and performance of the cloud-native data format usage, I now need to try it out with much larger datasets.
+To test the handling and performance of the cloud-native data format usage, I now need to try it out with much larger datasets...
 
 ## Installation
 
@@ -49,7 +49,7 @@ After installing the plugin, within QGIS 4.x:
 - Open the plugin dialog from the plugins toolbar or from menu:
     - Web > Web Map Exporter > Export data and styling
 
-_TBD: insert Plugin screengrab ("Layers" tab)_
+![plugin Layer tab screenshot](images/plugin%20Layer%20tab%20screenshot.png)
 
 - (If you had a project already loaded, your map layers will automatically have been loaded into the plugin 'Layers' panel).
 - Otherwise press 'Reload Layers' (or do this if you change project layers later).
@@ -60,7 +60,7 @@ _TBD: insert Plugin screengrab ("Layers" tab)_
     - **GeoJSON:** Human readable/editable format suitable for small and simple datasets, but must be loaded completely and can be slow to load and render for larger datasets.
 - Select 'Options' tab:
 
-_TBD: insert Plugin screengrab ("Options" tab)_
+![plugin Options tab screenshot](images/plugin%20Options%20tab%20screenshot.png)
 
 - Make any required adjustments in the 'Options' tab, including:
     - **PMTiles Max Zoom:** keeping this low reduces file size, but increases geometry simplification errors when zoomed in.
@@ -100,8 +100,8 @@ _TBD (including SLDReader, MapSplat, qgis2web, Plugin Builder... and GitHub Copi
 
 ## Your Feedback
 
-If you come across bugs, please check first to see if it is already listed on the **Detailed Status and Viability Notes** (Link TBD) page, but if not please add a new issue.
+If you come across bugs, please check first to see if it is already listed on the [Detailed Status and Viability Notes](TBD-Link-to-page) page, but if not please add a new issue.
 
 At this proof of concept stage, please don't raise issue tickets for missing features - there are lots of things needed for a real plugin product, but I'm trying to focus on viability at the moment.
 
-_TBD: come up with a better solution for more discursive feedback_
+_TBD: come up with a better solution for more discursive feedback :-)_

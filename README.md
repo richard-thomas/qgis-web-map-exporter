@@ -2,15 +2,17 @@
 
 _(Note: please come back in a week or so - initial site is still in development!)_
 
-A "Proof of Concept" QGIS 4.x Python Plugin to export data (in cloud-native formats) and QGIS styling to build a standalone web map.
+A "Proof of Concept" QGIS 4.x Python Plugin to export standalone interactive web maps with faithful QGIS styling, exporting data in cloud-native formats
 
-_TBD: Add cross-ref to LinkedIn article_
+![QGIS vs web browser styling](images/QGIS%20+%20Firefox%20D+S%20Canal%20screengrab.png)
+    _Example web map browser rendering (inset) vs original QGIS Project_
 
-_TBD: insert QGIS + Plugin + (Firefox) Web Map screengrab_
+ For a wider discussion of existing open source QGIS-styling web map solutions and the motivation for developing this plugin, see my LinkedIn article:
+- [Faithfully QGIS-styled Web Maps with Cloud-Native Data](TBD-Add-cross-ref-to-LinkedIn-article).
 
 ## Key Design Aims
 
-- **"Instant" web maps:** Convert a QGIS Project to the key components to build a complete standalone web map which can be immediately viewed in a web browser (as with the [qgis2web](https://github.com/qgis2web/qgis2web/blob/master/README.md) and [MapSplat](https://github.com/johnzastrow/mapsplat4/blob/main/README.md) plugins).
+- **"Instant" web maps:** Convert a QGIS Project to the key components to build a complete standalone interactive web map which can be immediately viewed in a web browser (as with the [qgis2web](https://github.com/qgis2web/qgis2web/blob/master/README.md) and [MapSplat](https://github.com/johnzastrow/mapsplat4/blob/main/README.md) plugins).
 - **QGIS Styling:** Accurately style (vector) data layers to match QGIS Desktop as closely as possible (for a wide range of styling types).
 - **Cloud-Native Data:** Export data in selectable cloud-native file formats to optimize partial data loading from cheap online storage (e.g. cloud object/blob storage such as AWS S3 buckets or simple web servers).
 - **Performance:** Test the viability of such cheap data sourcing for realistic performant web maps: do they make a viable alternative to the dependency on dedicated database and geospatial application servers and their inherent costs, set-up and maintenance requirements?

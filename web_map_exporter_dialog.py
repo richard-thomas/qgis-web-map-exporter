@@ -19,6 +19,7 @@ Initialisation and all handling of Qt UI for plugin.
 """
 
 import os
+from pathlib import PurePath
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QTreeWidgetItem, QCheckBox, QLabel, QComboBox, QWidget, QHBoxLayout
@@ -76,8 +77,10 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
         # Switch tab to Layers tab so user can see new layer tree
         self.tab_widget_qt.setCurrentWidget(self.tab_layers_qt)
 
-        # Set "Web Map Title" field from QGIS project title
+        # Set "Web Map Title" field from QGIS project title (otherwise filename)
         project_title = QgsProject.instance().title()
+        if project_title == "":
+            project_title = PurePath(QgsProject.instance().fileName()).stem
         self.options_title_qt.setText(project_title)
 
     def _do_export(self):
@@ -122,7 +125,7 @@ class WebMapExporterDialog(QDialog, FORM_CLASS):
             "merge_slds": self.options_merge_slds_qt.isChecked(),
             "export_map_config": self.options_checkbox_map_qt.isChecked(),
             "web_map_title": self.options_title_qt.text(),
-            "target_crs": "EPSG:" + target_epsg,
+            "target_crs_id": "EPSG:" + target_epsg,
         }
         #self.log_message(str(ui_options))
         self.file_export.export_selected_layers(ui_options, selected_layers)

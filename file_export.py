@@ -84,7 +84,7 @@ class FileExport:
         if ui_options["export_src_data"]:
             abort_export = False
             # If PMTiles export requested, stop if DisplayProjection not EPSG:3857
-            if (ui_options["target_crs"] != "3857" and
+            if (ui_options["target_crs_id"] != "EPSG:3857" and
                     any(layer_info["out_format"] == "PMTiles" for layer_info in selected_layers)):
                 self.dlg.log_message(
                     "ERROR: PMTiles export only possible with EPSG:3857 output display projection."
@@ -163,7 +163,7 @@ class FileExport:
 
         # Set up common writeAsVectorFormatV3() parameters
         transform_context = QgsProject.instance().transformContext()
-        target_crs = ui_options["target_crs"]
+        target_crs_id = ui_options["target_crs_id"]
         sv_options = QgsVectorFileWriter.SaveVectorOptions()
         sv_options.fileEncoding = "UTF-8"
         sv_options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
@@ -177,13 +177,13 @@ class FileExport:
 
             # If the layer's CRS is different from the requested output CRS,
             #  set up a coordinate transform
-            if layer_crs.authid() != target_crs:
+            if layer_crs.authid() != target_crs_id:
                 self.dlg.log_message(
-                    f"Transforming layer '{layer_name}' from {layer_crs.authid()} to {target_crs}"
+                    f"Transforming layer '{layer_name}' from {layer_crs.authid()} to {target_crs_id}"
                 )
                 sv_options.ct = QgsCoordinateTransform(
                     layer_crs,
-                    QgsCoordinateReferenceSystem(target_crs),
+                    QgsCoordinateReferenceSystem(target_crs_id),
                     QgsProject.instance(),
                 )
             else:
@@ -296,16 +296,16 @@ class FileExport:
         map_config_txt = "var mapConfig = "
         map_config = {}
         map_config["pageTitle"] = ui_options["web_map_title"]
-        target_crs = ui_options["target_crs"]
-        map_config["displayProjection"] = target_crs
+        target_crs_id = ui_options["target_crs_id"]
+        map_config["displayProjection"] = target_crs_id
 
         # Generate Proj4 string for display projections not natively available in OpenLayers
-        if target_crs not in ["EPSG:4326", "EPSG:3857"]:
+        if target_crs_id not in ["EPSG:4326", "EPSG:3857"]:
             self.dlg.log_message(
                 f"WARNING: Output Display Projection is not EPSG:4326 or EPSG:3857 - "
                 f"web map will need to load Proj4js library to display projection."
             )
-            crs = CRS(target_crs)
+            crs = CRS(target_crs_id)
             proj4_string = crs.to_proj4()
             map_config["proj4String"] = proj4_string
 
@@ -323,10 +323,10 @@ class FileExport:
             layer = layer_info["item"]
             if layer.extent():
                 # Convert extent projection if needed
-                if layer.crs().authid() != target_crs:
+                if layer.crs().authid() != target_crs_id:
                     transform = QgsCoordinateTransform(
                         layer.crs(),
-                        QgsCoordinateReferenceSystem(target_crs),
+                        QgsCoordinateReferenceSystem(target_crs_id),
                         QgsProject.instance(),
                     )
                     layer_extent_transformed = transform.transform(layer.extent())

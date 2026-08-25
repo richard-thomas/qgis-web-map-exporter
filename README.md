@@ -21,7 +21,7 @@ A "Proof of Concept" QGIS 4.x Python Plugin to generate standalone interactive w
 
 ## Current Status
 
-The key components of the plugin are now operational, exporting an instantly-viewable web map from a QGIS project. You can now try it out yourself (see [Quick Start Guide](#quick-start-guide) below). See my **Detailed Status and Viability Notes** (Link TBD) for a more in-depth discussion of this proof of concept.
+The key components of the plugin are now operational, exporting an instantly-viewable web map from a QGIS project. You can now try it out yourself (see [Quick Start Guide](#quick-start-guide) below). See my [Detailed Status and Viability Notes](TBD-Link-to-page) for a more in-depth discussion of this proof of concept.
 
 Key features include:
 - Qt6 Python Plugin Dialog dynamically populated with QGIS project layers

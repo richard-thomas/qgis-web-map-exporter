@@ -1,0 +1,31 @@
+{
+"type": "FeatureCollection",
+"name": "Pre-hedgelaying other trees",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3857" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289856.435285547631793, 6705856.719661938026547 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289855.917862954549491, 6705855.454851156100631 ] } },
+{ "type": "Feature", "properties": { "fid": 3, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289855.687897357624024, 6705854.247531771659851 ] } },
+{ "type": "Feature", "properties": { "fid": 4, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289855.112983365368564, 6705852.92522958945483 ] } },
+{ "type": "Feature", "properties": { "fid": 5, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289842.932104995299596, 6705815.46675315964967 ] } },
+{ "type": "Feature", "properties": { "fid": 6, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289842.357191003102344, 6705817.01902093924582 ] } },
+{ "type": "Feature", "properties": { "fid": 7, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289842.702139398432337, 6705818.628780116327107 ] } },
+{ "type": "Feature", "properties": { "fid": 8, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289842.989596394589171, 6705820.583487690426409 ] } },
+{ "type": "Feature", "properties": { "fid": 9, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289841.724785611615516, 6705814.086959578096867 ] } },
+{ "type": "Feature", "properties": { "fid": 10, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289840.977397421607748, 6705811.212389616295695 ] } },
+{ "type": "Feature", "properties": { "fid": 11, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289840.804923223971855, 6705809.200190643779933 ] } },
+{ "type": "Feature", "properties": { "fid": 12, "type": "Holly", "code": "ho", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289889.147891708009411, 6705818.315407254733145 ] } },
+{ "type": "Feature", "properties": { "fid": 13, "type": "Hazel", "code": "hz", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289890.815142285602633, 6705822.454787998460233 ] } },
+{ "type": "Feature", "properties": { "fid": 14, "type": "Dogwood", "code": "do", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289890.067754095653072, 6705820.327606227248907 ] } },
+{ "type": "Feature", "properties": { "fid": 15, "type": "Sea Buckthorn (Hippophae)", "code": "hp", "accuracy": "legacy", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289888.457994917233009, 6705816.648156676441431 ] } },
+{ "type": "Feature", "properties": { "fid": 16, "type": "Willow", "code": "wi", "accuracy": "vague", "notes": "Completely remove in hedgelaying?" }, "geometry": { "type": "Point", "coordinates": [ -289885.870881952054333, 6705810.496576959267259 ] } },
+{ "type": "Feature", "properties": { "fid": 17, "type": "Blackthorn (Sloe)", "code": "sl", "accuracy": "vague", "notes": "T2: Permission to prune granted Nov 2017" }, "geometry": { "type": "Point", "coordinates": [ -289892.842600539617706, 6705825.962523150257766 ] } },
+{ "type": "Feature", "properties": { "fid": 18, "type": "Blackthorn (Sloe)", "code": "sl", "accuracy": "vague", "notes": "T4: Permission to prune granted Nov 2017" }, "geometry": { "type": "Point", "coordinates": [ -289889.685638903640211, 6705819.210132983513176 ] } },
+{ "type": "Feature", "properties": { "fid": 19, "type": "Hawthorn", "code": "ht", "accuracy": "vague", "notes": "T3: permission to prune granted Nov 2017" }, "geometry": { "type": "Point", "coordinates": [ -289892.101733951130882, 6705824.976874898187816 ] } },
+{ "type": "Feature", "properties": { "fid": 20, "type": "Hawthorn", "code": "ht", "accuracy": "vague", "notes": "T5: permission to prune granted Nov 2017" }, "geometry": { "type": "Point", "coordinates": [ -289887.717065012315288, 6705815.242909854277968 ] } },
+{ "type": "Feature", "properties": { "fid": 21, "type": "Hawthorn", "code": "ht", "accuracy": "vague", "notes": "T6: permission to prune granted Nov 2017" }, "geometry": { "type": "Point", "coordinates": [ -289881.490835119097028, 6705800.861195732839406 ] } },
+{ "type": "Feature", "properties": { "fid": 22, "type": "Hawthorn", "code": "ht", "accuracy": "good", "notes": "T1: permission to prune granted Nov 2017" }, "geometry": { "type": "Point", "coordinates": [ -289894.820228693308309, 6705831.553878306411207 ] } },
+{ "type": "Feature", "properties": { "fid": 23, "type": "Hawthorn", "code": "ht", "accuracy": "vague", "notes": "T7: permission to prune granted Nov 2017" }, "geometry": { "type": "Point", "coordinates": [ -289879.123113892099354, 6705794.722659220919013 ] } },
+{ "type": "Feature", "properties": { "fid": 24, "type": "Hawthorn", "code": "ht", "accuracy": "vague", "notes": "T8: permission to prune/hedgelay granted Nov 2018" }, "geometry": { "type": "Point", "coordinates": [ -289841.499378804059234, 6705812.856339714489877 ] } }
+]
+}

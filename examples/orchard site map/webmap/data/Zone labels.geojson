@@ -1,0 +1,24 @@
+{
+"type": "FeatureCollection",
+"name": "Zone labels",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3857" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "label": "Wildflower Micromeadow", "type": "major", "notes": "2 beds of perennial wildflowers on steep slope" }, "geometry": { "type": "Point", "coordinates": [ -289864.082981789601035, 6705859.50016501173377 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "label": "Tea Spot", "type": "major", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289878.578405893640593, 6705821.754600630141795 ] } },
+{ "type": "Feature", "properties": { "fid": 3, "label": "Mediterranean Zone", "type": "major", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289865.42785887431819, 6705867.094765019603074 ] } },
+{ "type": "Feature", "properties": { "fid": 4, "label": "Jurassic Zone", "type": "major", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289840.075069108104799, 6705787.09708499442786 ] } },
+{ "type": "Feature", "properties": { "fid": 5, "label": "Redland Green Allotments", "type": "major", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289829.935019407363143, 6705784.703483695164323 ] } },
+{ "type": "Feature", "properties": { "fid": 6, "label": "Wooded Area", "type": "major", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289858.462446935183834, 6705828.106853084638715 ] } },
+{ "type": "Feature", "properties": { "fid": 7, "label": "Wildlife Zone", "type": "major", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289860.566306104068644, 6705788.718919286504388 ] } },
+{ "type": "Feature", "properties": { "fid": 8, "label": "Woodpile (and brash)", "type": "minor", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289866.262256109854206, 6705794.968642209656537 ] } },
+{ "type": "Feature", "properties": { "fid": 9, "label": "Woodpile (big stuff)", "type": "minor", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289871.240202906832565, 6705806.93902129586786 ] } },
+{ "type": "Feature", "properties": { "fid": 10, "label": "Ornamentals", "type": "minor", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289859.336356784740929, 6705832.127960816957057 ] } },
+{ "type": "Feature", "properties": { "fid": 11, "label": "Bramble cuttings dump", "type": "minor", "notes": "Location for disposal of bramble cuttings" }, "geometry": { "type": "Point", "coordinates": [ -289873.952215554658324, 6705844.698068510740995 ] } },
+{ "type": "Feature", "properties": { "fid": 12, "label": "Metford       Road      Allotments", "type": "major", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289891.224151806964073, 6705809.590989302843809 ] } },
+{ "type": "Feature", "properties": { "fid": 13, "label": "Discovery Corner", "type": "minor", "notes": "Created April 2022" }, "geometry": { "type": "Point", "coordinates": [ -289841.342531148518901, 6705803.548322668299079 ] } },
+{ "type": "Feature", "properties": { "fid": 14, "label": "Chutney Patch", "type": "minor", "notes": "Created early 2022" }, "geometry": { "type": "Point", "coordinates": [ -289893.245779247372411, 6705831.406793114729226 ] } },
+{ "type": "Feature", "properties": { "fid": 15, "label": "Raised         bed", "type": "minor", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289899.021857649029698, 6705834.457747348584235 ] } },
+{ "type": "Feature", "properties": { "fid": 16, "label": "Herb bed", "type": "minor", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289856.101151987444609, 6705805.725459913723171 ] } },
+{ "type": "Feature", "properties": { "fid": 17, "label": "Silt Beds", "type": "minor", "notes": null }, "geometry": { "type": "Point", "coordinates": [ -289847.828408568864688, 6705782.077215751633048 ] } }
+]
+}

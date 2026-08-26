@@ -1,6 +1,8 @@
 .vscode/
 .qgis-settings/
 uv.lock
+*.gpkg-wal
+*.gpkg-shm
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

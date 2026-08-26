@@ -34,7 +34,7 @@ Key features include:
 ## Examples
 
 The status of the **styling** is easiest to get an idea of by looking at examples of 2 QGIS projects I had to hand and their resultant exported web maps:
-- [Orchard Site Map](TBD-insert-link-to-page): detailed layout of a community orchard including a wide variety of polygon fill styles and zoom-level labelling changes
+- [Orchard Site Map](examples/orchard%20site%20map/README.md): detailed layout of a community orchard including a wide variety of polygon fill styles and zoom-level labelling changes
 - [Dorset & Somerset Canal](examples/D+S%20canal/README.md): evidences for a former canal route with lots of overlapping features with complex rule-based styling by feature type and zoom level
 
 To test the handling and performance of the cloud-native data format usage, I now need to try it out with much larger datasets...
@@ -49,7 +49,7 @@ After installing the plugin, within QGIS 4.x:
 - Open the plugin dialog from the plugins toolbar or from menu:
     - Web > Web Map Exporter > Export data and styling
 
-![plugin Layer tab screenshot](images/plugin%20Layer%20tab%20screenshot.png)
+<img src="images/plugin%20Layer%20tab%20screenshot.png" alt="plugin Layer tab screenshot" width="392" />
 
 - (If you had a project already loaded, your map layers will automatically have been loaded into the plugin 'Layers' panel).
 - Otherwise press 'Reload Layers' (or do this if you change project layers later).
@@ -60,7 +60,8 @@ After installing the plugin, within QGIS 4.x:
     - **GeoJSON:** Human readable/editable format suitable for small and simple datasets, but must be loaded completely and can be slow to load and render for larger datasets.
 - Select 'Options' tab:
 
-![plugin Options tab screenshot](images/plugin%20Options%20tab%20screenshot.png)
+<img src="images/plugin%20Options%20tab%20screenshot.png" alt="plugin Options tab screenshot" width="392" />
+
 
 - Make any required adjustments in the 'Options' tab, including:
     - **PMTiles Max Zoom:** keeping this low reduces file size, but increases geometry simplification errors when zoomed in.

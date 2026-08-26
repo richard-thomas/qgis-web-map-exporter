@@ -17,7 +17,7 @@ Source QGIS Project and source data files in folder [examples/D+S canal/](.):
 
 ## Web Map Exporter UI Settings
 
-Layers and Options tab settings used to generate this web map (scrollbar hides the lower layers):
+'Layers' and 'Options' tab settings used to generate this web map (scrollbar hides the lower layers):
 
 ![Layers tab screenshot](screenshots/D+S%20Layers%20tab.png) ![Options tab screenshot](screenshots/D+S%20Options%20tab.png)
 
@@ -31,7 +31,7 @@ Web map screenshot (Murtry Viaduct):
 
 ![web map screenshot - Murtry Viaduct](screenshots/webmap1.png)
 
-(Current) key limitations of Web Map Exporter displayed in this example:
+Key limitations of Web Map Exporter displayed in this example:
 - Layer 'Notable features (SVG Marker):
     - currently doesn't export SVG files to webmap folder, though as a temporary workaround QGIS built-in SVGs like this red-marker.svg are redirected to the GitHub QGIS files.
 - Layer 'Probable path evidence':

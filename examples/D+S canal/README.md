@@ -17,17 +17,18 @@ Source QGIS Project and source data files in folder [examples/D+S canal/](.):
 
 ## Web Map Exporter UI Settings
 
-Layers tab (scrollbar hides the lower layers):
-![Layers tab screenshot](screenshots/D+S%20Layers%20tab.png)
+![Layers tab screenshot](screenshots/D+S%20Layers%20tab.png) - Layers tab (scrollbar hides the lower layers)
 
-Options tab:
-![Options tab screenshot](screenshots/D+S%20Options%20tab.png)
+![Options tab screenshot](screenshots/D+S%20Options%20tab.png) - Options tab
 
 ## Comparison with source QGIS Project Styling
 
 QGIS canvas screenshot (Murtry Viaduct):
+
 ![QGIS canvas screenshot - Murtry Viaduct](screenshots/QGIS1.png)
+
 Web map screenshot (Murtry Viaduct):
+
 ![web map screenshot - Murtry Viaduct](screenshots/webmap1.png)
 
 (Current) key limitations of Web Map Exporter displayed in this example:

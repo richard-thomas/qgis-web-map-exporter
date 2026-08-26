@@ -1,0 +1,19 @@
+{
+"type": "FeatureCollection",
+"name": "Notable features (SVG Marker)",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3857" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "title": "Barrow Hill balance lock", "description": "The only balance lock to be completed. (Not visible on any OS maps)" }, "geometry": { "type": "Point", "coordinates": [ -264896.311870086647104, 6665971.28342249430716 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "title": "Conduit Bridge", "description": null }, "geometry": { "type": "Point", "coordinates": [ -265813.505721318884753, 6666356.173019330948591 ] } },
+{ "type": "Feature", "properties": { "fid": 3, "title": "Vobster Bridge", "description": "Canal bridge arch is filled in" }, "geometry": { "type": "Point", "coordinates": [ -269385.357110877986997, 6664320.882947998121381 ] } },
+{ "type": "Feature", "properties": { "fid": 4, "title": "Coleford Aqueduct", "description": "Two arch stone-faced aqueduct (\"Huckyduck\")" }, "geometry": { "type": "Point", "coordinates": [ -273038.373196717817336, 6663320.584617705084383 ] } },
+{ "type": "Feature", "properties": { "fid": 5, "title": "Edford Bridge", "description": "Packhorse arched bridge over canal (now infilled)" }, "geometry": { "type": "Point", "coordinates": [ -275656.768789371591993, 6663432.544614305719733 ] } },
+{ "type": "Feature", "properties": { "fid": 6, "title": "Western limit of building of canal", "description": "Site of canal basin" }, "geometry": { "type": "Point", "coordinates": [ -276185.366806113801431, 6663330.679371496662498 ] } },
+{ "type": "Feature", "properties": { "fid": 7, "title": "Murtry Aqueduct", "description": "Three arch aqueduct" }, "geometry": { "type": "Point", "coordinates": [ -260706.9890464177588, 6665051.92666351608932 ] } },
+{ "type": "Feature", "properties": { "fid": 8, "title": "Whatcombe Wall", "description": "\"Stone wall which is face of the canal embankment\"" }, "geometry": { "type": "Point", "coordinates": [ -259322.722990073467372, 6664367.869438377209008 ] } },
+{ "type": "Feature", "properties": { "fid": 9, "title": "Northern end of Goodeaves tunnel", "description": "Tunnel (never completed) under Goodeaves Farm (Stock Hill) - no public access" }, "geometry": { "type": "Point", "coordinates": [ -271673.054930734215304, 6664409.777740430086851 ] } },
+{ "type": "Feature", "properties": { "fid": 10, "title": "Southern end of Goodeaves tunnel", "description": "Tunnel (never completed) under Goodeaves Farm (Stock Hill)" }, "geometry": { "type": "Point", "coordinates": [ -271815.185551505710464, 6663942.623545514419675 ] } },
+{ "type": "Feature", "properties": { "fid": 11, "title": "Site of balance locks", "description": "Site of 5 planned balance locks" }, "geometry": { "type": "Point", "coordinates": [ -263087.33199056138983, 6665476.824027678929269 ] } },
+{ "type": "Feature", "properties": { "fid": 12, "title": "Coleford Tunnel", "description": "\"still in situ under the road in front of Coleford Methodist [Wesleyan] Chapel but is not accessible to the public\"" }, "geometry": { "type": "Point", "coordinates": [ -272633.192443668900523, 6663532.478214268572628 ] } }
+]
+}

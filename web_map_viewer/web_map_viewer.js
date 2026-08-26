@@ -23,15 +23,21 @@ if (!ol.proj.get(mapConfig.displayProjection)) {
     ol.proj.proj4.register(proj4);
 }
 
+// Example hard-wired base layer
+// For dev, can disable/adjust dynamically in browser developer tools console:
+//   osm_greyscale_lyr.setOpacity(0)
+window.osm_greyscale_lyr = new ol.layer.Tile({
+    source: new ol.source.OSM(),
+    zIndex: -1000,
+    opacity: 0.3,
+    className: 'ol-grayscale'
+});
+
 // Create map with various controls and an example OpenStreetMap baselayer
 const map = new ol.Map({
     target: 'map',
     layers: [
-        new ol.layer.Tile({
-          source: new ol.source.OSM(),
-          zIndex: -1000,
-          className: 'ol-grayscale'
-        })
+        osm_greyscale_lyr
     ],
     view: new ol.View({
         projection: displayProjection

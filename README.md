@@ -1,14 +1,12 @@
 # QGIS Web Map Exporter
 
-_(25/08/2026 Note: please come back in a few days - initial site is still in development!)_
-
 A "Proof of Concept" QGIS 4.x Python Plugin to generate standalone interactive web maps with faithful QGIS styling, exporting data in cloud-native formats
 
 ![QGIS vs web browser styling](images/QGIS%20+%20Firefox%20D+S%20Canal%20screengrab.png)
     _Example web map browser rendering (inset) vs original QGIS Project_
 
  For a wider discussion of existing open source QGIS-styling web map solutions and the motivation for developing this plugin, see my LinkedIn article:
-- [Faithfully QGIS-styled Web Maps with Cloud-Native Data](TBD-Add-cross-ref-to-LinkedIn-article).
+- (TBD) [Faithfully QGIS-styled Web Maps with Cloud-Native Data](TBD-Add-cross-ref-to-LinkedIn-article).
 
 ## Key Design Aims
 
@@ -21,7 +19,7 @@ A "Proof of Concept" QGIS 4.x Python Plugin to generate standalone interactive w
 
 ## Current Status
 
-The key components of the plugin are now operational, exporting an instantly-viewable web map from a QGIS project. You can now try it out yourself (see [Quick Start Guide](#quick-start-guide) below). See my [Detailed Status and Viability Notes](TBD-Link-to-page) for a more in-depth discussion of this proof of concept.
+The key components of the plugin are now operational, exporting an instantly-viewable web map from a QGIS project. You can now try it out yourself (see [Quick Start Guide](#quick-start-guide) below). See my [Detailed Status and Viability Notes](PROJECT_STATUS.md) for a more in-depth discussion of this proof of concept.
 
 Key features include:
 - Qt6 Python Plugin Dialog dynamically populated with QGIS project layers
@@ -97,12 +95,18 @@ and view the output in a web browser at: http://127.0.0.1:8000/web_map_viewer.ht
 
 ## Acknowledgements
 
-_TBD (including SLDReader, MapSplat, qgis2web, Plugin Builder... and GitHub Copilot)_
+[SLDReader](https://github.com/NieuwlandGeo/SLDReader/blob/master/README.md): Thanks to Arjen Kopinga (@ajkopinga) at Nieuwland Geo-Informatie for creating and continuing to improve (including adding QGIS-specific support) the @NieuwlandGeo/sldreader NPM module that is at the heart of the styling engine of this plugin.
+
+[MapSplat](https://github.com/johnzastrow/mapsplat4): Thanks to John Zastrow for his QGIS MapSplat plugin (only created in March 2026) which blazes the trail for cloud-native web map generation (using PMTiles). For this proof-of-concept plugin, I directly lifted most of my PMTiles handling code from MapSplat. For a production plugin, I would probably also take note of MapSplat's worker process spawning (with cancellation) for potentially slow file exports of very large files.
+
+[qgis2web](https://github.com/qgis2web/qgis2web/blob/master/README.md): QGIS web map generation all started here! It continues to excel in providing an excellent (and extensive)plugin UI, combined with helpfully saving UI settings within the QGIS project. Definitely one to keep watching as it is still actively developed; interesting to see the recent addition of Vector Tile output (even if that currently is just in a form that requires a server).
+
+[Plugin Builder](https://jonah-sullivan.github.io/Qgis-Plugin-Builder/): Jonah Sullivan's plugin builder was very helpful in creating this plugin and he has been very responsive in fixing and documenting the few issues I raised.
+
+**GitHub Copilot in VS Code**: Developing this plugin has been my first foray into seriously using GitHub Copilot within the VS Code IDE. (Prior to this I have just used the AI prompts of Google and Bing search engines to research APIs and generate code). Copilot has been very helpful, even if at times quite infuriating!
 
 ## Your Feedback
 
-If you come across bugs, please check first to see if it is already listed on the [Detailed Status and Viability Notes](TBD-Link-to-page) page, but if not please add a new issue.
+If you come across bugs, please check first to see if it is already listed on the [Detailed Status and Viability Notes](PROJECT_STATUS.md) page and the Styling Limitations page referred to in that, but if not please add a new issue. (Or email me direct at mrcobristol-qgis@yahoo.com)
 
 At this proof of concept stage, please don't raise issue tickets for missing features - there are lots of things needed for a real plugin product, but I'm trying to focus on viability at the moment.
-
-_TBD: come up with a better solution for more discursive feedback :-)_

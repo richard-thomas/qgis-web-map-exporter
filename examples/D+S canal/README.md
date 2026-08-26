@@ -17,9 +17,9 @@ Source QGIS Project and source data files in folder [examples/D+S canal/](.):
 
 ## Web Map Exporter UI Settings
 
-![Layers tab screenshot](screenshots/D+S%20Layers%20tab.png) - Layers tab (scrollbar hides the lower layers)
+Layers and Options tab settings used to generate this web map (scrollbar hides the lower layers):
 
-![Options tab screenshot](screenshots/D+S%20Options%20tab.png) - Options tab
+![Layers tab screenshot](screenshots/D+S%20Layers%20tab.png) ![Options tab screenshot](screenshots/D+S%20Options%20tab.png)
 
 ## Comparison with source QGIS Project Styling
 

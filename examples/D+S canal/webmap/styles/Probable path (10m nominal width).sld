@@ -13,11 +13,11 @@
        <ogc:Literal>1</ogc:Literal>
       </ogc:PropertyIsGreaterThan>
      </ogc:Filter>
-     <se:LineSymbolizer>
+     <se:LineSymbolizer uom="http://www.opengeospatial.org/se/units/metre">
       <se:Stroke>
        <se:SvgParameter name="stroke">#84d9ff</se:SvgParameter>
        <se:SvgParameter name="stroke-opacity">0.33</se:SvgParameter>
-       <se:SvgParameter name="stroke-width">10</se:SvgParameter>
+       <se:SvgParameter name="stroke-width">15.94999999999999929</se:SvgParameter>
        <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
        <se:SvgParameter name="stroke-linecap">round</se:SvgParameter>
       </se:Stroke>

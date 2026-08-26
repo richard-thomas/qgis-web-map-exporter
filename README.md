@@ -1,6 +1,6 @@
 # QGIS Web Map Exporter
 
-_(Note: please come back in a week or so - initial site is still in development!)_
+_(25/08/2026 Note: please come back in a few days - initial site is still in development!)_
 
 A "Proof of Concept" QGIS 4.x Python Plugin to generate standalone interactive web maps with faithful QGIS styling, exporting data in cloud-native formats
 
@@ -35,7 +35,7 @@ Key features include:
 
 The status of the **styling** is easiest to get an idea of by looking at examples of 2 QGIS projects I had to hand and their resultant exported web maps:
 - [Orchard Site Map](TBD-insert-link-to-page): detailed layout of a community orchard including a wide variety of polygon fill styles and zoom-level labelling changes
-- [Dorset & Somerset Canal](TBD-insert-link-to-page): evidences for a former canal route with lots of overlapping features with complex rule-based styling by feature type and zoom level
+- [Dorset & Somerset Canal](examples/D+S%20canal/README.md): evidences for a former canal route with lots of overlapping features with complex rule-based styling by feature type and zoom level
 
 To test the handling and performance of the cloud-native data format usage, I now need to try it out with much larger datasets...
 

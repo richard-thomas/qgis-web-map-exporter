@@ -18,23 +18,13 @@
      </ogc:Filter>
      <se:MinScaleDenominator>0</se:MinScaleDenominator>
      <se:MaxScaleDenominator>10000</se:MaxScaleDenominator>
-     <se:LineSymbolizer>
-      <se:Stroke>
-       <se:SvgParameter name="stroke">#e9c9b0</se:SvgParameter>
-       <se:SvgParameter name="stroke-opacity">0.25</se:SvgParameter>
-       <se:SvgParameter name="stroke-width">1.5</se:SvgParameter>
-       <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
-       <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-       <se:SvgParameter name="stroke-dasharray">3 4</se:SvgParameter>
-      </se:Stroke>
-     </se:LineSymbolizer>
-     <se:LineSymbolizer>
+     <se:LineSymbolizer uom="http://www.opengeospatial.org/se/units/metre">
       <se:Stroke>
        <se:SvgParameter name="stroke">#673f20</se:SvgParameter>
-       <se:SvgParameter name="stroke-width">1.5</se:SvgParameter>
+       <se:SvgParameter name="stroke-width">2.39999999999999991</se:SvgParameter>
        <se:SvgParameter name="stroke-linejoin">bevel</se:SvgParameter>
        <se:SvgParameter name="stroke-linecap">butt</se:SvgParameter>
-       <se:SvgParameter name="stroke-dasharray">1 6</se:SvgParameter>
+       <se:SvgParameter name="stroke-dasharray">0.3 2</se:SvgParameter>
       </se:Stroke>
      </se:LineSymbolizer>
     </se:Rule>

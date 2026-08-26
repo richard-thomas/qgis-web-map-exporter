@@ -7,8 +7,8 @@ Output Web map files are in sub-folder [examples/D+S canal/webmap/](webmap/):
 - [data/](webmap/data/) - exported data files
 - [styles/](webmap/styles/) - exported SLD style files
 - [map_config.js](https://richard-thomas.github.io/qgis-web-map-exporter/examples/D%2BS%20canal/webmap/map_config.js) - exported Map Configuration (JSONP)
-- [web_map_viewer.html](https://richard-thomas.github.io/qgis-web-map-exporter/examples/D%2BS%20canal/webmap/web_map_viewer.html) - common HTML template copied from folder web_map_viewer/
-- [web_map_viewer.js](https://richard-thomas.github.io/qgis-web-map-exporter/examples/D%2BS%20canal/webmap/web_map_viewer.js) - common JavaScript template copied from folder web_map_viewer/ (modified just to comment out hard-wired OSM base map)
+- [web_map_viewer.html](webmap/web_map_viewer.html) - common HTML template copied from folder web_map_viewer/
+- [web_map_viewer.js](webmap/web_map_viewer.js) - common JavaScript template copied from folder web_map_viewer/ (modified just to comment out hard-wired OSM base map)
 
 Source QGIS Project and source data files in folder [examples/D+S canal/](.):
 - D+S Canal example.qgz

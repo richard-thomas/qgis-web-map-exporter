@@ -46,6 +46,7 @@ If development was continued along the current SLD Reader-based path:
 - In the current examples, the QGIS style matching seems to be quite promising, but requires users to use some QGIS styling methods in particular ways (and avoid some styling types altogether).
 - Current test examples are very small and localized data sets so do not give any indication of how well the cloud-native data formats will perform.
 - For faster loading (particularly with large numbers of small layers), the planned merging of SLD files and merging PMTiles files should help.
+- For simplicity of development, the JavaScript libraries are currently loaded in their entirety using the ```<script>``` tag. If they were instead loaded as ES modules and combined with a bumndler like Vite or Webpack then this would result in discarding of unused code, fewer download files and thus faster web map loading. It would also allow OpenLayers 10+ to be used (issues with the PMTiles OpenLayers library restricts it to using OpenLayers 9 with script loading).
 
 However, my biggest question is whether switching the core styling engine from SLD Reader to [GeoStyler](https://geostyler.org/) would improve things (especially in the long term)...
 

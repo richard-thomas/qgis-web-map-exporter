@@ -42,6 +42,18 @@ Current styling limitations of Web Map Exporter in addition to those listed in [
 
 ## Viability as a production plugin
 
+If development was continued along the current SLD Reader-based path:
 - In the current examples, the QGIS style matching seems to be quite promising, but requires users to use some QGIS styling methods in particular ways (and avoid some styling types altogether).
 - Current test examples are very small and localized data sets so do not give any indication of how well the cloud-native data formats will perform.
 - For faster loading (particularly with large numbers of small layers), the planned merging of SLD files and merging PMTiles files should help.
+
+However, my biggest question is whether switching the core styling engine from SLD Reader to [GeoStyler](https://geostyler.org/) would improve things (especially in the long term)...
+
+Pros:
+- GeoStyler would allow use of MapLibre GL JS which could be more lightweight and faster than OpenLayers
+- GeoStyler can read QGIS native QML style format and includes support for potentially more data-defined styling than SLD would provide in its QGIS-exported rules/expressions.
+- It will undoubtedly have improved since I last did an in-depth test of it in August 2020, but is it now better at QGIS styling than SLD Reader?
+
+Cons:
+- If using GeoStyler, for reduced web map loading time and faster rendering, it would be best for the plugin to write out styles in GeoStyler intermediate style format, so the plugin would need to call on the GeoStyler CLI (which a user would have to manually install).
+- The QGIS QML style format has changed significantly in the move from QGIS 3 to 4, so this might have impaired (for now) GeoStyler's ability to import QGIS 4 QML, though could try it with QGIS-exported SLD.

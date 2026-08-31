@@ -38,8 +38,6 @@ Key limitations of Web Map Exporter displayed in this example:
 - Layer 'Probable path evidence':
     - dashed line spacing too close due to QGIS bug that doesn't scale "stroke-dasharray" by "stroke-width"
     - labels on line instead of above line (as specified in QGIS)
-- Layer 'OS 1st edition (SVG Fill)', rule 'Hachure':
-    - Hachure lines too close due to 2 SLD issues: QGIS bug that doesn't scale "stroke-dasharray" by "stroke-width", but more importantly rendering of "stroke-dasharray" by SLDReader not in specified units of measurement for this line symbolizer.
-- Layer 'OS 1st edition (SVG Fill)', rule 'March':
-    - currently don't export SVG files to webmap folder, though as a temporary workaround QGIS built-in SVGs like this landuse_swamp.svg are redirected to the GitHub QGIS files.
+- Layer 'OS 1st edition (SVG Fill)', rule 'Marsh':
+    - currently doesn't export SVG files to webmap folder, though as a temporary workaround QGIS built-in SVGs like this landuse_swamp.svg are redirected to the GitHub QGIS files.
 - (General): Labels overlap when zoomed out. Although you could set 'declutter' for layers in OpenLayers this would also hide overlapping features.

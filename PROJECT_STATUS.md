@@ -32,7 +32,6 @@ For details on the fundamental SLD styling limitations of QGIS and the SLD Reade
 
 Current styling limitations of Web Map Exporter in addition to those listed in [ol-sld-styler Styling Limitations](https://github.com/richard-thomas/ol-sld-styler/blob/main/StylingLimitations.md) (or that are potentially fixable in this plugin) include (in order of priority to address):
 - **Dash pattern lines:** [FIXABLE] incorrect dot/dash spacing of predefined (but not custom) dash patterns as these are incorrectly not scaled by stroke width (QGIS bug)
-- **Dash pattern lines:** incorrect dot/dash spacing due to "units of measurement" in SLD "stroke-dasharray" spacing being ignored (bug in SLD Reader?)
 - **SVGs/PNG rendering:** [FIXABLE] on web map loading any symbology using SVGs or PNGs is currently not not rendered but appears when the map is first panned or zoomed (SLDReader requires a callback to be set up to fix this)
 - **PNG markers:** [FIXABLE?] PNGs (unless embedded) are not exported by QGIS in SLD
 - **Label word wrap:** Word wrap settings on labels not in web map

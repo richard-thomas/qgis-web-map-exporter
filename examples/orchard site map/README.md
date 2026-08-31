@@ -24,11 +24,11 @@ Source QGIS Project and source data files in folder [examples/orchard site map/]
 
 QGIS canvas screenshot:
 
-![QGIS canvas screenshot - Murtry Viaduct](screenshots/QGIS1.png)
+![QGIS canvas screenshot](screenshots/QGIS1.png)
 
 Web map screenshot:
 
-![web map screenshot - Murtry Viaduct](screenshots/webmap1.png)
+![web map screenshot](screenshots/webmap1.png)
 
 Key limitations of Web Map Exporter displayed in this example:
 - Layer 'Area type':
@@ -39,8 +39,9 @@ WARNING: replacing QGIS local SVG path with GitHub version in 'Area type.sld'
 - Layer 'Fruit trees':
     - crowns (the outer circles) different in size for 2 reasons: web map do not scale to map units as SLD will not allow mixing of units of measurement (map units and mm); data-defined values not exported from QGIS
     - label callouts (on far left) not supported in web map
+- Layer 'Steps', rule 'proposed':
+    - dotted line spacing too close due to QGIS bug that doesn't scale "stroke-dasharray" by "stroke-width" for predefined dash patterns
 - Layer 'Footpaths':
-    - dashed line spacing too close due to QGIS bug that doesn't scale "stroke-dasharray" by "stroke-width"
     - data-defined widths ignored in web map, but widths do scale to honour unit of measurement 'map units'
     - overlapping of different path types handled differently
 - Layer 'Soft fruits':

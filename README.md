@@ -6,7 +6,7 @@ A "Proof of Concept" QGIS 4.x Python Plugin to generate standalone interactive w
     _Example web map browser rendering (inset) vs original QGIS Project_
 
  For a wider discussion of existing open source QGIS-styling web map solutions and the motivation for developing this plugin, see my LinkedIn article:
-- (TBD) [Faithfully QGIS-styled Web Maps with Cloud-Native Data](TBD-Add-cross-ref-to-LinkedIn-article).
+- [Faithfully QGIS-styled Web Maps with Cloud-Native Data](https://www.linkedin.com/pulse/faithfully-qgis-styled-web-maps-cloud-native-data-richard-thomas-c5ere).
 
 ## Key Design Aims
 
